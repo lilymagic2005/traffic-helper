@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMB Real-time Assistant with Mapping Table</title>
+    <title>KMB Smart Assistant - 即將 20px 調整版 v2.72</title>
     <style>
         :root {
-            --kmb-red: #e1251b;
-            --bg-color: #f4f5f7;
+            --kmb-red: #ff3b30;
+            --kmb-red-light: #fff5f5;
+            --bg-color: #f7f9fc;
             --card-bg: #ffffff;
-            --text-main: #222222;
-            --text-sub: #666666;
-            --border-color: #e5e5e5;
-            --blue-time: #0066cc;
-            --badge-origin: #2c3e50;
-            --badge-dest: #c0392b;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --border-color: #e2e8f0;
+            --blue-time: #0051a8;
+            --badge-bg: #edf2f7;
+            --radius: 14px;
         }
 
         body {
@@ -27,29 +28,33 @@
         }
 
         .header {
-            background-color: var(--kmb-red);
+            background: linear-gradient(135deg, #ff3b30, #ff6b6b);
             color: white;
-            padding: 12px 16px;
+            padding: 10px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 17px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.15);
         }
 
         .header-status {
-            font-size: 13px;
-            font-weight: normal;
+            font-size: 11px;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 20px;
         }
 
         .status-dot {
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background-color: #4cd964;
+            background-color: #34c759;
         }
 
         .refresh-btn {
@@ -57,406 +62,1131 @@
             border: none;
             color: white;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px;
         }
 
-        .control-panel {
+        .tabs-container {
+            display: flex;
+            background: #ffffff;
+            margin: 10px 16px 0 16px;
+            padding: 3px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid var(--border-color);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-sub);
+            cursor: pointer;
+            border-radius: 9px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--kmb-red);
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 12px 16px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
-            padding: 14px 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            margin: 10px;
-            border-radius: 8px;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 8px;
+            border-radius: var(--radius);
+            padding: 12px 16px;
             margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .capsule-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+            margin-bottom: 6px;
+        }
+
+        .stop-capsule {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
             align-items: center;
+            gap: 6px;
         }
 
-        .input-group label {
-            font-size: 14px;
+        .stop-capsule.origin.enabled {
+            background: #e6f4ea;
+            border-color: #34a853;
+            color: #137333;
+        }
+
+        .stop-capsule.dest.enabled {
+            background: #fff0f0;
+            border-color: var(--kmb-red);
+            color: var(--kmb-red);
+        }
+
+        .stop-capsule.disabled {
+            background: #f1f3f5;
+            border-color: #dee2e6;
+            color: #adb5bd;
+            opacity: 0.5;
+        }
+
+        .delete-stop-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            cursor: pointer;
+            font-size: 11px;
+            padding: 0 2px;
             font-weight: bold;
-            color: var(--text-main);
-            min-width: 60px;
         }
 
-        .input-group input {
+        .add-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .add-input {
             flex: 1;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
+            padding: 6px 10px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 11px;
+            background: #fafbfc;
+            font-family: monospace;
         }
 
-        .query-btn {
-            background-color: var(--kmb-red);
+        .add-btn {
+            background: var(--blue-time);
             color: white;
             border: none;
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
         }
 
-        /* 站點 Mapping Table 區塊 (UI 提取顯示) */
-        .mapping-table-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            margin: 10px;
-            padding: 12px 16px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        .add-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
         }
 
-        .mapping-title {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--text-sub);
-            margin-bottom: 8px;
+        .fare-table-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .fare-table-btn:hover {
+            background: #0284c7;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 12px;
+            font-weight: 800;
+            font-size: 16px;
+        }
+        .close-modal-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--text-sub);
         }
 
-        .mapping-table {
+        .search-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            background: #fafbfc;
+        }
+
+        .search-btn {
+            background: var(--kmb-red);
+            color: white;
+            border: none;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .side-by-side-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .side-by-side-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .route-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px dashed var(--border-color);
+        }
+
+        .route-dest-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .service-type-badge {
+            background: var(--badge-bg);
+            color: var(--text-main);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .service-type-badge.primary {
+            background: #e1f5fe;
+            color: #007aff;
+        }
+
+        .minimal-table-container {
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .minimal-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 12px;
         }
 
-        .mapping-table th, .mapping-table td {
-            border: 1px solid #e2e8f0;
-            padding: 6px 8px;
+        .minimal-table th {
             text-align: left;
+            color: var(--text-sub);
+            font-weight: 700;
+            padding: 6px 4px;
+            font-size: 11px;
+            border-bottom: 2px solid var(--border-color);
+            background: #fff;
+            position: sticky;
+            top: 0;
         }
 
-        .mapping-table th {
-            background-color: #f8fafc;
-            color: #475569;
+        .minimal-table td {
+            padding: 8px 4px;
+            border-bottom: 1px solid #f7f9fc;
+            color: var(--text-main);
         }
 
-        .mapping-table td {
+        .seq-col {
+            width: 28px;
+            color: var(--text-sub);
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .uuid-cell {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .uuid-text {
             font-family: monospace;
-            color: #334155;
+            font-size: 11px;
+            color: var(--text-sub);
         }
 
-        .bus-list {
-            padding: 0 10px;
+        .copy-btn {
+            background: #f1f3f5;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #007aff;
+            color: white;
         }
 
         .bus-card {
-            background: var(--card-bg);
-            border-radius: 8px;
+            background: #ffffff;
+            border-radius: var(--radius);
             padding: 14px 16px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border-color);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            border-left: 6px solid var(--kmb-red);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .bus-info {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
+        .route-no-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-right: 16px;
         }
 
         .route-no {
-            font-size: 26px;
-            font-weight: 800;
-            color: var(--text-main);
+            font-size: 22px;
+            font-weight: 400;
             line-height: 1;
-            min-width: 60px;
-        }
-
-        .route-details {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .dest-name {
-            font-size: 16px;
-            font-weight: 600;
             color: var(--text-main);
         }
 
-        .stop-detail {
-            font-size: 13px;
-            color: var(--text-sub);
+        .route-corner-badge {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            background: #e2e8f0;
+            color: #475569;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .route-header-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .route-direction {
+            font-size: 15px;
+            font-weight: 400;
+            color: var(--text-main);
         }
 
         .meta-tags {
             display: flex;
-            gap: 8px;
-            margin-top: 4px;
-            font-size: 12px;
+            gap: 6px;
+            align-items: center;
         }
 
         .fare-tag {
-            color: #e67e22;
-            font-weight: 600;
+            color: #d97706;
+            background: #fef3c7;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 1px 6px;
+            border-radius: 4px;
         }
 
         .crowd-tag {
-            color: #27ae60;
+            color: #059669;
+            background: #d1fae5;
+            font-size: 10px;
+            font-weight: 500;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .crowd-tag.crowded {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .route-pair-info {
+            font-size: 11px;
+            color: var(--text-sub);
+            margin-top: 3px;
         }
 
         .time-box {
             text-align: right;
-            min-width: 75px;
         }
 
-        .time-mins {
-            font-size: 24px;
-            font-weight: bold;
+        .time-mins-container {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 3px;
+        }
+
+        .time-digit {
+            font-size: 20px; /* 依照需求調整為 20px */
+            font-weight: 400;
             color: var(--blue-time);
-            line-height: 1.1;
+            line-height: 1;
         }
 
-        .time-clock {
+        .time-unit {
             font-size: 12px;
-            color: var(--text-sub);
-            margin-top: 2px;
+            font-weight: 400;
+            color: #64748b;
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             color: var(--text-sub);
-            font-size: 14px;
+            font-size: 13px;
         }
 
-        .fallback-banner {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 10px 16px;
-            font-size: 13px;
-            text-align: center;
-            border-bottom: 1px solid #ffeeba;
-            display: none;
+        .api-log-box {
+            background: #1a202c;
+            color: #48bb78;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 8px;
+            border-radius: 8px;
+            max-height: 80px;
+            overflow-y: auto;
+            margin-top: 6px;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
 
         .app-version {
             text-align: center;
-            padding: 15px;
+            padding: 10px;
             font-size: 11px;
-            color: #999;
+            color: var(--text-sub);
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <span>實時到站預報 (Mapping Table 版)</span>
+        <span>✨ KMB Smart Assistant</span>
         <div class="header-status">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">已連線</span>
+            <span class="status-dot"></span>
+            <span>實時連線中</span>
             <button class="refresh-btn" onclick="loadBusData()">🔄</button>
         </div>
     </div>
 
-    <div class="fallback-banner" id="fallbackBanner">
-        保底模式已啟用：目前未能取得最新官方回應，已顯示此站點的預設直達班次；畫面會於下一次更新自動重試。
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab('etaTab', this)">🚌 實時預報</button>
+        <button class="tab-btn" onclick="switchTab('routeStopTab', this)">🔍 路線站序查詢</button>
     </div>
 
-    <!-- UI 輸入控制面板：可自由輸入站代號 -->
-    <div class="control-panel">
-        <div class="input-group">
-            <label for="stopCodeInput">站代號:</label>
-            <input type="text" id="stopCodeInput" value="KT314" placeholder="例如: KT314">
+    <!-- TAB 1: 實時預報 -->
+    <div id="etaTab" class="tab-content active">
+        <div class="card" style="padding: 10px 14px;">
+            <div style="font-size: 12px; color: var(--text-main); margin-bottom: 6px; font-weight: 700; display:flex; justify-content:space-between; align-items:center;">
+                <span>⚙️ 站點狀態設定</span>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <button class="fare-table-btn" onclick="openFareModal()">📊 票價表</button>
+                    <span style="font-size:11px; color:#007aff; cursor:pointer;" onclick="loadBusData()">🔄 重新整理</span>
+                </div>
+            </div>
+            
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px;">起點</div>
+            <div class="capsule-group" id="originCapsulesContainer"></div>
+            <div class="add-row">
+                <input type="text" id="newOriginInput" class="add-input" placeholder="輸入其他起點 UUID (足夠 16 碼啟用按鈕)..." oninput="checkInputState('origin')">
+                <button id="addOriginBtn" class="add-btn" onclick="addCustomStop('origin')" disabled>+ 新增起點</button>
+            </div>
+
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin: 8px 0 2px 0;">終點</div>
+            <div class="capsule-group" id="destCapsulesContainer"></div>
+            <div class="add-row">
+                <input type="text" id="newDestInput" class="add-input" placeholder="輸入其他終點 UUID (足夠 16 碼啟用按鈕)..." oninput="checkInputState('dest')">
+                <button id="addDestBtn" class="add-btn" onclick="addCustomStop('dest')" disabled>+ 新增終點</button>
+            </div>
         </div>
-        <button class="query-btn" onclick="loadBusData()">透過代號 Mapping 並查詢實時巴士</button>
-    </div>
 
-    <!-- UI 可提取與檢視的對照表 (Mapping Table) -->
-    <div class="mapping-table-container">
-        <div class="mapping-title">
-            <span>📋 站點代號對照表 (Mapping Table)</span>
-            <span id="mappingStatus" style="color: #27ae60; font-weight: normal;">狀態: 載入中</span>
+        <div id="busListContainer">
+            <div class="empty-state">正在載入實時數據...</div>
         </div>
-        <table class="mapping-table" id="mappingTableUI">
-            <thead>
-                <tr>
-                    <th>代號 (Code)</th>
-                    <th>站名 (Name)</th>
-                    <th>系統 UUID (ID)</th>
-                </tr>
-            </thead>
-            <tbody id="mappingTableBody">
-                <!-- 動態填入 -->
-            </tbody>
-        </table>
     </div>
 
-    <div class="bus-list" id="busListContainer">
-        <div class="empty-state">請點擊上方查詢按鈕以載入數據...</div>
+    <!-- TAB 2: 路線站序查詢 -->
+    <div id="routeStopTab" class="tab-content">
+        <div class="card">
+            <div style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">🚌 輸入路線號碼查詢站序</div>
+            <div class="search-group">
+                <input type="text" id="routeSearchInput" class="search-input" placeholder="例如: 3D, 101, 1A" onkeydown="if(event.key==='Enter') searchRouteStops()">
+                <button class="search-btn" onclick="searchRouteStops()">查詢</button>
+            </div>
+
+            <div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-top: 4px; display:flex; justify-content:space-between;">
+                <span>API 狀態記錄</span>
+                <span style="color:#007aff; cursor:pointer;" onclick="clearRouteLogs()">清除</span>
+            </div>
+            <div class="api-log-box" id="routeApiLogContainer">等待發送請求...</div>
+        </div>
+
+        <div id="routeStopResultsContainer">
+            <div class="empty-state">請輸入路線號碼開始查詢</div>
+        </div>
+    </div>
+
+    <!-- Fare Table Modal 彈出視窗 -->
+    <div id="fareModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>📊 路線車費表 (Fare Information)</span>
+                <button class="close-modal-btn" onclick="closeFareModal()">×</button>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <table class="minimal-table">
+                    <thead>
+                        <tr>
+                            <th>路線</th>
+                            <th>方向</th>
+                            <th style="text-align: right;">車費</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fareTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div class="app-version">
-        KMB Real-time Assistant | Version: v2.16.0-mapping-table | Engine: Code-to-ID Mapper
+        KMB Cute & Clean UI | v2.72
     </div>
 
     <script>
-        // 1. 建立站點 Mapping Table（內含代號、站名、UUID）
-        const stationMappingTable = [
-            { code: "KT314", name: "啟業邨", id: "23AF5995FEBCA8E6" },
-            { code: "KT331", name: "觀塘道休憩處", id: "001476" },
-            { code: "KT315", name: "九龍灣站", id: "003295" } // 可擴充其他站點
+        let allStopsCache = null;
+        let routeListCache = null;
+
+        let stopCodeMap = {
+            "23AF5995FEBCA8E6": "啟業邨 (KT314)",
+            "D9B53E4B3A192940": "啟業邨 (KT316)",
+            "4D3C6D74F6AE8C7D": "觀塘道休憩處 (KT331)",
+            "DF942A6B97EABDC4": "觀塘道休憩處 (KT332)",
+            "3E73B73B12E25DCF": "觀塘道休憩處 (KT330)"
+        };
+
+        let originsList = [
+            { id: "23AF5995FEBCA8E6", enabled: true, isCustom: false },
+            { id: "D9B53E4B3A192940", enabled: false, isCustom: false }
         ];
 
-        // 渲染 UI 上的 Mapping Table 供隨時提取檢視
-        function renderMappingTableUI() {
-            const tbody = document.getElementById('mappingTableBody');
+        let destsList = [
+            { id: "4D3C6D74F6AE8C7D", enabled: true, isCustom: false },
+            { id: "DF942A6B97EABDC4", enabled: true, isCustom: false },
+            { id: "3E73B73B12E25DCF", enabled: true, isCustom: false }
+        ];
+
+        const fareDatabase = [
+            { route: "3D", dir: "Outbound (O)", fare: "$5.8" },
+            { route: "1A", dir: "Inbound (I)", fare: "$7.9" },
+            { route: "17", dir: "Inbound (I)", fare: "$6.7" },
+            { route: "101", dir: "Inbound (I)", fare: "$7.7" },
+            { route: "11B", dir: "Inbound (I)", fare: "$5.8" },
+            { route: "11C", dir: "Outbound (O)", fare: "$6.7" }
+        ];
+
+        function openFareModal() {
+            const tbody = document.getElementById('fareTableBody');
             let html = '';
-            stationMappingTable.forEach(item => {
+            fareDatabase.forEach(item => {
                 html += `
                     <tr>
-                        <td><b>${item.code}</b></td>
-                        <td>${item.name}</td>
-                        <td>${item.id}</td>
+                        <td><b>${item.route}</b></td>
+                        <td>${item.dir}</td>
+                        <td style="text-align: right; color: #d97706; font-weight: 700;">${item.fare}</td>
                     </tr>
                 `;
             });
             tbody.innerHTML = html;
-            document.getElementById('mappingStatus'].innerText = "狀態: 運作中 (已掛載)";
+            document.getElementById('fareModal').style.display = 'flex';
         }
 
-        // 核心 Mapping 邏輯：輸入代號，對應找出 ID 與 站名
-        function getStopInfoByCode(code) {
-            const cleanCode = code.trim().toUpperCase();
-            const found = stationMappingTable.find(item => item.code === cleanCode);
-            if (found) {
-                return found;
+        function closeFareModal() {
+            document.getElementById('fareModal').style.display = 'none';
+        }
+
+        function checkInputState(type) {
+            const inputId = type === 'origin' ? 'newOriginInput' : 'newDestInput';
+            const btnId = type === 'origin' ? 'addOriginBtn' : 'addDestBtn';
+            const val = document.getElementById(inputId).value.trim();
+            document.getElementById(btnId).disabled = (val.length !== 16);
+        }
+
+        async function getStopDisplayName(uuid) {
+            if (stopCodeMap[uuid]) return stopCodeMap[uuid];
+            if (!allStopsCache) {
+                const res = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop`);
+                allStopsCache = {};
+                if (res.data && res.data.data) {
+                    res.data.data.forEach(s => { allStopsCache[s.stop] = s.name_tc; });
+                }
             }
-            // 若找不到，預設回傳 KT314 作為保底
-            return { code: cleanCode, name: "未知站點 (預設啟業邨)", id: "23AF5995FEBCA8E6" };
+            if (allStopsCache[uuid]) {
+                stopCodeMap[uuid] = allStopsCache[uuid];
+                return allStopsCache[uuid];
+            }
+            const single = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop/${uuid}`);
+            if (single.data && single.data.data && single.data.data.name_tc) {
+                stopCodeMap[uuid] = single.data.data.name_tc;
+                return single.data.data.name_tc;
+            }
+            return uuid.substring(0, 8);
+        }
+
+        async function renderCapsules() {
+            const originContainer = document.getElementById('originCapsulesContainer');
+            const destContainer = document.getElementById('destCapsulesContainer');
+
+            let originHtml = '';
+            for (let i = 0; i < originsList.length; i++) {
+                const item = originsList[i];
+                const displayName = await getStopDisplayName(item.id);
+                const deleteBtn = item.isCustom ? `<button class="delete-stop-btn" onclick="removeStop('origin', ${i}); event.stopPropagation();">×</button>` : '';
+                originHtml += `
+                    <div class="stop-capsule origin ${item.enabled ? 'enabled' : 'disabled'}" onclick="toggleStop('origin', ${i})">
+                        <span>${displayName}</span>
+                        <span style="font-family:monospace; font-size:9px; opacity:0.7;">(${item.id.substring(0,4)})</span>
+                        ${deleteBtn}
+                    </div>
+                `;
+            }
+            originContainer.innerHTML = originHtml;
+
+            let destHtml = '';
+            for (let i = 0; i < destsList.length; i++) {
+                const item = destsList[i];
+                const displayName = await getStopDisplayName(item.id);
+                const deleteBtn = item.isCustom ? `<button class="delete-stop-btn" onclick="removeStop('dest', ${i}); event.stopPropagation();">×</button>` : '';
+                destHtml += `
+                    <div class="stop-capsule dest ${item.enabled ? 'enabled' : 'disabled'}" onclick="toggleStop('dest', ${i})">
+                        <span>${displayName}</span>
+                        <span style="font-family:monospace; font-size:9px; opacity:0.7;">(${item.id.substring(0,4)})</span>
+                        ${deleteBtn}
+                    </div>
+                `;
+            }
+            destContainer.innerHTML = destHtml;
+        }
+
+        async function addCustomStop(type) {
+            const inputId = type === 'origin' ? 'newOriginInput' : 'newDestInput';
+            const uuid = document.getElementById(inputId).value.trim();
+            if (uuid.length !== 16) {
+                alert("請輸入有效的 16 碼 UUID！");
+                return;
+            }
+            if (type === 'origin') {
+                originsList.push({ id: uuid, enabled: true, isCustom: true });
+            } else {
+                destsList.push({ id: uuid, enabled: true, isCustom: true });
+            }
+            document.getElementById(inputId).value = "";
+            checkInputState(type);
+            await renderCapsules();
+            loadBusData();
+        }
+
+        function removeStop(type, index) {
+            if (type === 'origin') {
+                originsList.splice(index, 1);
+            } else {
+                destsList.splice(index, 1);
+            }
+            renderCapsules();
+            loadBusData();
+        }
+
+        function toggleStop(type, index) {
+            if (type === 'origin') {
+                originsList[index].enabled = !originsList[index].enabled;
+            } else {
+                destsList[index].enabled = !destsList[index].enabled;
+            }
+            renderCapsules();
+            loadBusData();
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function copyToClipboard(text, btnElement) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = btnElement.innerText;
+                btnElement.innerText = "✅ 已複製";
+                btnElement.style.background = "#34c759";
+                btnElement.style.color = "white";
+                setTimeout(() => {
+                    btnElement.innerText = originalText;
+                    btnElement.style.background = "#f1f3f5";
+                    btnElement.style.color = "#495057";
+                }, 1500);
+            });
+        }
+
+        function logRouteApiCall(stepName, url, data) {
+            const container = document.getElementById('routeApiLogContainer');
+            const timeStr = new Date().toLocaleTimeString();
+            const logHTML = `[${timeStr}] ${stepName}\nURL: ${url}\nStatus: ${data}\n\n`;
+            if (container.innerHTML.includes("等待發送請求")) container.innerHTML = "";
+            container.innerHTML += logHTML;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearRouteLogs() {
+            document.getElementById('routeApiLogContainer').innerHTML = `日誌已清除。`;
         }
 
         async function fetchWithFallback(url) {
             try {
                 const res = await fetch(url);
-                if (res.ok) return await res.json();
+                if (res.ok) {
+                    const data = await res.json();
+                    return { status: res.status, data };
+                }
+                return { status: res.status, data: null };
             } catch (e) {}
             try {
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                 const res = await fetch(proxyUrl);
-                if (res.ok) return await res.json();
-            } catch (e) {}
-            throw new Error("Load failed");
-        }
-
-        async function loadBusData() {
-            const container = document.getElementById('busListContainer');
-            const statusText = document.getElementById('statusText');
-            const statusDot = document.getElementById('statusDot');
-            const banner = document.getElementById('fallbackBanner');
-            const inputCode = document.getElementById('stopCodeInput').value;
-
-            // 執行 Mapping 步驟：用代號在 Table 中對應取得 ID 與站名
-            const currentStop = getStopInfoByCode(inputCode);
-            
-            container.innerHTML = `<div class="empty-state">正在透過代號 [${currentStop.code}] Mapping 取得 ID [${currentStop.id}]...</div>`;
-            statusText.innerText = "查詢中...";
-            statusDot.style.backgroundColor = "#f39c12";
-            banner.style.display = "none";
-
-            try {
-                // 使用 Mapping 得到的真實 ID 請求九巴 ETA API
-                const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${currentStop.id}`);
-                const etas = etaData.data || [];
-
-                let displayEtas = etas.filter(item => item.stop === currentStop.id);
-                if (displayEtas.length === 0 && etas.length > 0) {
-                    displayEtas = etas;
+                if (res.ok) {
+                    const data = await res.json();
+                    return { status: res.status, data };
                 }
-
-                renderBuses(displayEtas, currentStop);
-                statusText.innerText = "已連線";
-                statusDot.style.backgroundColor = "#4cd964";
-
-            } catch (err) {
-                console.warn(err);
-                statusText.innerText = "保底模式";
-                statusDot.style.backgroundColor = "#f39c12";
-                banner.style.display = "block";
-
-                renderBuses([
-                    { route: "14", dest_tc: "中秀茂坪", eta: new Date(Date.now() + 3 * 60000).toISOString(), psg_cap: "1", rmk_tc: "保底模式示範資料" },
-                    { route: "15", dest_tc: "藍田 (平田)", eta: new Date(Date.now() + 7 * 60000).toISOString(), psg_cap: "2", rmk_tc: "保底模式示範資料" },
-                    { route: "74X", dest_tc: "大埔中心", eta: new Date(Date.now() + 12 * 60000).toISOString(), psg_cap: "1", rmk_tc: "保底模式示範資料" }
-                ], currentStop);
-            }
+                return { status: res.status, data: null };
+            } catch (e) {}
+            return { status: 500, data: null };
         }
 
-        function renderBuses(etas, stopInfo) {
-            const container = document.getElementById('busListContainer');
-            if (!etas || etas.length === 0) {
-                container.innerHTML = `<div class="empty-state">現時由 ${stopInfo.name} (${stopInfo.code}) 暫無即時班次。</div>`;
+        function getRouteFare(route, dir) {
+            const r = String(route).trim().toUpperCase();
+            const d = String(dir).trim().toUpperCase();
+            if (r === "3D" && (d === "O" || d === "OUTBOUND")) return "$5.8";
+            if (r === "1A" && (d === "I" || d === "INBOUND")) return "$7.9";
+            if (r === "17" && (d === "I" || d === "INBOUND")) return "$6.7";
+            if (r === "101" && (d === "I" || d === "INBOUND")) return "$7.7";
+            if (r === "11B" && (d === "I" || d === "INBOUND")) return "$5.8";
+            if (r === "11C" && (d === "O" || d === "OUTBOUND")) return "$6.7";
+            return null;
+        }
+
+        async function searchRouteStops() {
+            const targetRoute = document.getElementById('routeSearchInput').value.trim().toUpperCase();
+            const container = document.getElementById('routeStopResultsContainer');
+
+            if (!targetRoute) {
+                alert("請輸入路線號碼！");
                 return;
             }
 
-            let html = '';
-            etas.forEach(bus => {
-                const route = bus.route;
-                const dest = bus.dest_tc || "指定方向";
-                const etaTimeStr = bus.eta;
-                
-                let minsText = "即將到達";
-                let clockTime = "--:--";
+            container.innerHTML = `<div class="empty-state">正在查詢路線 ${targetRoute} ...</div>`;
 
-                if (etaTimeStr) {
-                    const etaDate = new Date(etaTimeStr);
-                    const diffMins = Math.round((etaDate - new Date()) / 60000);
-                    
-                    if (diffMins <= 0) {
-                        minsText = "即將";
-                    } else {
-                        minsText = `${diffMins} <span style="font-size:14px; font-weight:normal;">分鐘</span>`;
-                    }
-
-                    const hours = String(etaDate.getHours()).padStart(2, '0');
-                    const mins = String(etaDate.getMinutes()).padStart(2, '0');
-                    clockTime = `${hours}:${mins}`;
+            try {
+                if (!routeListCache) {
+                    const routeListUrl = `https://data.etabus.gov.hk/v1/transport/kmb/route/`;
+                    const listResult = await fetchWithFallback(routeListUrl);
+                    logRouteApiCall("GET Route List", routeListUrl, listResult.status);
+                    routeListCache = (listResult.data && listResult.data.data) ? listResult.data.data : [];
                 }
 
-                const capacity = bus.psg_cap ? (bus.psg_cap === '1' ? '座位充足' : '擁擠') : '';
-                const rmk = bus.rmk_tc ? `• ${bus.rmk_tc}` : '';
+                let routeDirections = routeListCache.filter(item => String(item.route).trim().toUpperCase() === targetRoute);
 
-                html += `
-                    <div class="bus-card">
-                        <div class="bus-info">
-                            <div class="route-no">${route}</div>
-                            <div class="route-details">
-                                <div class="dest-name">往 ${dest}</div>
-                                <div class="stop-detail">上車站: ${stopInfo.name} (${stopInfo.code}) [UUID: ${stopInfo.id}]</div>
-                                <div class="meta-tags">
-                                    <span class="fare-tag">九巴實時班次</span>
-                                    ${capacity ? `<span class="crowd-tag">${capacity}</span>` : ''}
-                                    <span style="color:#888;">${rmk}</span>
-                                </div>
-                            </div>
+                if (routeDirections.length === 0) {
+                    container.innerHTML = `<div class="error-state">找不到路線 "${targetRoute}"</div>`;
+                    return;
+                }
+
+                if (!allStopsCache) {
+                    const stopListUrl = `https://data.etabus.gov.hk/v1/transport/kmb/stop`;
+                    const stopResult = await fetchWithFallback(stopListUrl);
+                    logRouteApiCall("GET Stop List", stopListUrl, stopResult.status);
+                    
+                    allStopsCache = {};
+                    if (stopResult.data && stopResult.data.data) {
+                        stopResult.data.data.forEach(s => {
+                            allStopsCache[s.stop] = s.name_tc;
+                        });
+                    }
+                }
+
+                await Promise.all(routeDirections.map(async (dirInfo) => {
+                    const boundCode = String(dirInfo.bound).trim().toUpperCase();
+                    const directionStr = (boundCode === 'I' || boundCode === 'INBOUND') ? 'inbound' : 'outbound';
+                    
+                    const routeStopUrl = `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${targetRoute}/${directionStr}/${dirInfo.service_type}`;
+                    const stopResult = await fetchWithFallback(routeStopUrl);
+                    
+                    logRouteApiCall(`GET Route-Stop (${directionStr})`, routeStopUrl, stopResult.status);
+
+                    dirInfo.stops = (stopResult.data && stopResult.data.data) ? stopResult.data.data : [];
+                }));
+
+                const groupedByService = {};
+                routeDirections.forEach(dir => {
+                    const st = dir.service_type || '1';
+                    if (!groupedByService[st]) {
+                        groupedByService[st] = { outbound: null, inbound: null };
+                    }
+                    const boundCode = String(dir.bound).trim().toUpperCase();
+                    if (boundCode === 'I' || boundCode === 'INBOUND') {
+                        groupedByService[st].inbound = dir;
+                    } else {
+                        groupedByService[st].outbound = dir;
+                    }
+                });
+
+                let html = '';
+                const sortedServiceTypes = Object.keys(groupedByService).sort((a, b) => (a === '1' ? -1 : b === '1' ? 1 : a.localeCompare(b)));
+
+                sortedServiceTypes.forEach(st => {
+                    const pair = groupedByService[st];
+                    const isServiceOne = st === '1';
+
+                    html += `
+                        <div style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                            <span>路線 ${targetRoute}</span>
+                            <span class="service-type-badge ${isServiceOne ? 'primary' : ''}">服務類型: ${st}</span>
                         </div>
-                        <div class="time-box">
-                            <div class="time-mins">${minsText}</div>
-                            <div class="time-clock">${clockTime}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
+                        <div class="side-by-side-container">
+                    `;
+
+                    html += renderSingleDirectionCard(pair.outbound, "去程 (Outbound)");
+                    html += renderSingleDirectionCard(pair.inbound, "回程 (Inbound)");
+
+                    html += `</div>`;
+                });
+
+                container.innerHTML = html;
+
+            } catch (err) {
+                container.innerHTML = `<div class="error-state">查詢發生錯誤: ${err.message}</div>`;
+            }
         }
 
-        // 頁面載入時初始化 Mapping Table UI 並執行首次查詢
-        window.onload = () => {
-            renderMappingTableUI();
+        function renderSingleDirectionCard(dirInfo, defaultTitle) {
+            if (!dirInfo) {
+                return `
+                    <div class="card" style="display: flex; align-items: center; justify-content: center; color: var(--text-sub); height: 160px;">
+                        此服務類型暫無此方向資料
+                    </div>
+                `;
+            }
+
+            const destText = dirInfo.dest_tc || '指定目的地';
+
+            let tableRows = '';
+            dirInfo.stops.forEach(s => {
+                const stopName = allStopsCache[s.stop] || '未知站點';
+                tableRows += `
+                    <tr>
+                        <td class="seq-col">${s.seq}</td>
+                        <td><b>${stopName}</b></td>
+                        <td style="text-align: right;">
+                            <div class="uuid-cell">
+                                <span class="uuid-text">${s.stop}</span>
+                                <button class="copy-btn" onclick="copyToClipboard('${s.stop}', this)">📋 複製</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            return `
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="route-top-row">
+                        <div class="route-dest-title">往 ${destText}</div>
+                        <div style="font-size: 11px; color: var(--text-sub); font-weight: 600;">${defaultTitle} (${dirInfo.stops.length}站)</div>
+                    </div>
+                    
+                    <div class="minimal-table-container">
+                        <table class="minimal-table">
+                            <thead>
+                                <tr>
+                                    <th class="seq-col">#</th>
+                                    <th>站名</th>
+                                    <th style="text-align: right;">UUID / 複製</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tab 1: 實時預報
+        async function loadBusData() {
+            const container = document.getElementById('busListContainer');
+            
+            const activeOrigins = originsList.filter(o => o.enabled);
+            const activeDests = destsList.filter(d => d.enabled);
+
+            if (activeOrigins.length === 0) {
+                container.innerHTML = `<div class="empty-state">請至少啟用一個起點站！</div>`;
+                return;
+            }
+
+            container.innerHTML = `<div class="empty-state">正在更新實時預報...</div>`;
+
+            try {
+                let allEtas = [];
+                await Promise.all(activeOrigins.map(async (orig) => {
+                    const etaUrl = `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${orig.id}`;
+                    const etaResult = await fetchWithFallback(etaUrl);
+                    const origName = await getStopDisplayName(orig.id);
+                    if (etaResult.data && etaResult.data.data) {
+                        etaResult.data.data.forEach(bus => {
+                            allEtas.push({ ...bus, queriedOriginId: orig.id, queriedOriginName: origName });
+                        });
+                    }
+                }));
+
+                if (allEtas.length === 0) {
+                    container.innerHTML = `<div class="empty-state">現時啟用的起點暫無即時班次。</div>`;
+                    return;
+                }
+
+                const routeCache = {};
+                const validEtas = allEtas.filter(bus => (bus.bound || bus.dir) && bus.route && bus.service_type);
+                
+                const uniqueRoutes = [...new Set(validEtas.map(bus => {
+                    const b = bus.bound || bus.dir;
+                    return `${bus.route}-${b}-${bus.service_type}`;
+                }))];
+
+                await Promise.all(uniqueRoutes.map(async (key) => {
+                    const [route, bound, service_type] = key.split('-');
+                    const boundCode = String(bound).trim().toUpperCase();
+                    const directionStr = (boundCode === 'I' || boundCode === 'INBOUND') ? 'inbound' : 'outbound';
+
+                    const routeStopUrl = `https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${route}/${directionStr}/${service_type}`;
+                    const stopResult = await fetchWithFallback(routeStopUrl);
+                    routeCache[key] = (stopResult.data && stopResult.data.data) ? stopResult.data.data : [];
+                }));
+
+                let processedEtas = [];
+                for (const bus of validEtas) {
+                    const b = bus.bound || bus.dir;
+                    const cacheKey = `${bus.route}-${b}-${bus.service_type}`;
+                    const routeStops = routeCache[cacheKey] || [];
+
+                    const originStopItem = routeStops.find(s => s.stop === bus.queriedOriginId);
+                    
+                    let matchedDestName = "";
+                    let passesActiveDest = false;
+
+                    if (originStopItem) {
+                        for (const dest of activeDests) {
+                            const destStopItem = routeStops.find(s => s.stop === dest.id);
+                            if (destStopItem && originStopItem.seq < destStopItem.seq) {
+                                passesActiveDest = true;
+                                matchedDestName = await getStopDisplayName(dest.id);
+                                break;
+                            }
+                        }
+                        if (activeDests.length === 0 || passesActiveDest) {
+                            processedEtas.push({ 
+                                ...bus, 
+                                dir: b, 
+                                matchedOriginName: bus.queriedOriginName, 
+                                matchedDestName: matchedDestName || "指定終點" 
+                            });
+                        }
+                    }
+                }
+
+                // 排序：確保所有「即將」到站的車次嚴格置頂在最前，之後依時間排序
+                processedEtas.sort((a, b) => {
+                    const now = new Date();
+                    const diffA = a.eta ? new Date(a.eta) - now : -999999;
+                    const diffB = b.eta ? new Date(b.eta) - now : -999999;
+                    const isSoonA = !a.eta || diffA <= 0;
+                    const isSoonB = !b.eta || diffB <= 0;
+
+                    if (isSoonA && !isSoonB) return -1;
+                    if (!isSoonA && isSoonB) return 1;
+                    return diffA - diffB;
+                });
+
+                if (processedEtas.length === 0) {
+                    container.innerHTML = `<div class="empty-state">目前沒有符合啟用啟訖站條件的班次。</div>`;
+                    return;
+                }
+
+                let html = '';
+                processedEtas.forEach(bus => {
+                    const route = bus.route;
+                    const dest = bus.dest_tc || "指定方向";
+                    const dir = bus.dir || "N/A";
+                    const etaTimeStr = bus.eta;
+                    const serviceType = String(bus.service_type || '1');
+                    
+                    const fare = getRouteFare(route, dir);
+                    
+                    let isSoon = false;
+                    let minsNum = 0;
+
+                    if (etaTimeStr) {
+                        const etaDate = new Date(etaTimeStr);
+                        const diffMins = Math.round((etaDate - new Date()) / 60000);
+                        if (diffMins <= 0) {
+                            isSoon = true;
+                        } else {
+                            minsNum = diffMins;
+                        }
+                    } else {
+                        isSoon = true;
+                    }
+
+                    let crowdText = "座位充足";
+                    let crowdClass = "";
+                    if (bus.psg_cap === '2') {
+                        crowdText = "擁擠";
+                        crowdClass = "crowded";
+                    } else if (bus.psg_cap === '3') {
+                        crowdText = "客滿";
+                        crowdClass = "crowded";
+                    }
+
+                    const pairText = `${bus.matchedOriginName} > ${bus.matchedDestName}`;
+
+                    // 「即將」設為 20px、深藍色、非粗體，且絕對不帶分鐘字眼
+                    let timeBoxHtml = '';
+                    if (isSoon) {
+                        timeBoxHtml = `
+                            <div class="time-mins-container">
+                                <span class="time-digit" style="font-size: 20px; font-weight: 400; color: var(--blue-time);">即將</span>
+                            </div>
+                        `;
+                    } else {
+                        timeBoxHtml = `
+                            <div class="time-mins-container">
+                                <span class="time-digit">${minsNum}</span>
+                                <span class="time-unit">分鐘</span>
+                            </div>
+                        `;
+                    }
+
+                    const fareHtml = fare ? `<span class="fare-tag">💰 ${fare}</span>` : '';
+                    const cornerBadge = (serviceType !== '1') ? `<span class="route-corner-badge">${serviceType}</span>` : '';
+
+                    html += `
+                        <div class="bus-card">
+                            <div style="display: flex; align-items: center;">
+                                <div class="route-no-wrapper">
+                                    <div class="route-no">${route}</div>
+                                    ${cornerBadge}
+                                </div>
+                                <div>
+                                    <div class="route-header-line">
+                                        <span class="route-direction">往 ${dest}</span>
+                                        <div class="meta-tags">
+                                            ${fareHtml}
+                                            <span class="crowd-tag ${crowdClass}">${crowdText}</span>
+                                        </div>
+                                    </div>
+                                    <div class="route-pair-info">${pairText}</div>
+                                </div>
+                            </div>
+                            <div class="time-box">
+                                ${timeBoxHtml}
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = `<div class="error-state">無法取得實時數據</div>`;
+            }
+        }
+
+        window.onload = async () => {
+            await renderCapsules();
+
+            fetch("https://data.etabus.gov.hk/v1/transport/kmb/route/")
+                .then(res => res.json())
+                .then(data => { if(data && data.data) routeListCache = data.data; })
+                .catch(() => {});
+
             loadBusData();
+            setInterval(loadBusData, 30000);
         };
     </script>
 </body>
