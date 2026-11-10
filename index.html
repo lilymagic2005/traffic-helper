@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMB Real-time Assistant</title>
+    <title>KMB Real-time Assistant with Mapping Table</title>
     <style>
         :root {
             --kmb-red: #e1251b;
@@ -62,92 +62,33 @@
 
         .control-panel {
             background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            padding: 14px 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             margin: 10px;
             border-radius: 8px;
         }
 
-        .timeline-container {
-            position: relative;
-            padding-left: 8px;
-        }
-
-        .timeline-container::before {
-            content: '';
-            position: absolute;
-            left: 31px;
-            top: 22px;
-            bottom: 42px;
-            width: 2px;
-            background-color: #cbd5e1;
-        }
-
-        .station-item {
+        .input-group {
             display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding: 8px 0;
-            position: relative;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
         }
 
-        .station-badge-wrapper {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .rect-badge {
-            background-color: var(--badge-origin);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 6px;
-            font-size: 13px;
+        .input-group label {
+            font-size: 14px;
             font-weight: bold;
-            z-index: 1;
-            min-width: 42px;
-            text-align: center;
-            margin-top: 2px;
-        }
-
-        .rect-badge.dest {
-            background-color: var(--badge-dest);
-        }
-
-        .station-info-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .station-name {
-            font-size: 15px;
-            font-weight: 600;
             color: var(--text-main);
+            min-width: 60px;
         }
 
-        .station-id-debug {
-            font-size: 11px;
-            color: #2e7d32;
-            font-family: monospace;
-            background: #e8f5e9;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-top: 2px;
-            display: inline-block;
-            border: 1px solid #c8e6c9;
-        }
-
-        .add-small-btn {
-            background: none;
-            border: 1px dashed #94a3b8;
-            color: var(--text-sub);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-            white-space: nowrap;
+        .input-group input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
         }
 
         .query-btn {
@@ -160,7 +101,48 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 12px;
+        }
+
+        /* 站點 Mapping Table 區塊 (UI 提取顯示) */
+        .mapping-table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            margin: 10px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .mapping-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .mapping-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .mapping-table th, .mapping-table td {
+            border: 1px solid #e2e8f0;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        .mapping-table th {
+            background-color: #f8fafc;
+            color: #475569;
+        }
+
+        .mapping-table td {
+            font-family: monospace;
+            color: #334155;
         }
 
         .bus-list {
@@ -272,7 +254,7 @@
 <body>
 
     <div class="header">
-        <span>實時到站預報</span>
+        <span>實時到站預報 (Mapping Table 版)</span>
         <div class="header-status">
             <span class="status-dot" id="statusDot"></span>
             <span id="statusText">已連線</span>
@@ -284,53 +266,77 @@
         保底模式已啟用：目前未能取得最新官方回應，已顯示此站點的預設直達班次；畫面會於下一次更新自動重試。
     </div>
 
+    <!-- UI 輸入控制面板：可自由輸入站代號 -->
     <div class="control-panel">
-        <div class="timeline-container">
-            <div class="station-item">
-                <div class="station-badge-wrapper">
-                    <div class="rect-badge">起點</div>
-                    <div class="station-info-text">
-                        <div class="station-name">啟業邨</div>
-                        <div class="station-id-debug" id="originIdDebug">正在透過代號 KT314 尋找 ID...</div>
-                    </div>
-                </div>
-                <button class="add-small-btn" onclick="addStation('origin')">+ 新增</button>
-            </div>
-            <div class="station-item">
-                <div class="station-badge-wrapper">
-                    <div class="rect-badge dest">終點</div>
-                    <div class="station-info-text">
-                        <div class="station-name">觀塘道休憩處</div>
-                        <div class="station-id-debug" id="destIdDebug">正在透過代號 KT331 尋找 ID...</div>
-                    </div>
-                </div>
-                <button class="add-small-btn" onclick="addStation('dest')">+ 新增</button>
-            </div>
+        <div class="input-group">
+            <label for="stopCodeInput">站代號:</label>
+            <input type="text" id="stopCodeInput" value="KT314" placeholder="例如: KT314">
         </div>
-        <button class="query-btn" onclick="loadBusData()">查詢合適巴士</button>
+        <button class="query-btn" onclick="loadBusData()">透過代號 Mapping 並查詢實時巴士</button>
+    </div>
+
+    <!-- UI 可提取與檢視的對照表 (Mapping Table) -->
+    <div class="mapping-table-container">
+        <div class="mapping-title">
+            <span>📋 站點代號對照表 (Mapping Table)</span>
+            <span id="mappingStatus" style="color: #27ae60; font-weight: normal;">狀態: 載入中</span>
+        </div>
+        <table class="mapping-table" id="mappingTableUI">
+            <thead>
+                <tr>
+                    <th>代號 (Code)</th>
+                    <th>站名 (Name)</th>
+                    <th>系統 UUID (ID)</th>
+                </tr>
+            </thead>
+            <tbody id="mappingTableBody">
+                <!-- 動態填入 -->
+            </tbody>
+        </table>
     </div>
 
     <div class="bus-list" id="busListContainer">
-        <div class="empty-state">正在透過站代號動態解析並載入實時數據...</div>
+        <div class="empty-state">請點擊上方查詢按鈕以載入數據...</div>
     </div>
 
     <div class="app-version">
-        KMB Real-time Assistant | Version: v2.13.0-code-resolver (Build 2026.06) | Engine: Precise Code-Based Stop Resolution
+        KMB Real-time Assistant | Version: v2.16.0-mapping-table | Engine: Code-to-ID Mapper
     </div>
 
     <script>
-        // 設定起點與終點的「站代號」，由程式自動去 API 抓取對應的真實 ID
-        const ORIGIN_CODE = "KT314";
-        const DEST_CODE = "KT331";
+        // 1. 建立站點 Mapping Table（內含代號、站名、UUID）
+        const stationMappingTable = [
+            { code: "KT314", name: "啟業邨", id: "23AF5995FEBCA8E6" },
+            { code: "KT331", name: "觀塘道休憩處", id: "001476" },
+            { code: "KT315", name: "九龍灣站", id: "003295" } // 可擴充其他站點
+        ];
 
-        let resolvedOriginId = null;
-        let resolvedDestId = null;
+        // 渲染 UI 上的 Mapping Table 供隨時提取檢視
+        function renderMappingTableUI() {
+            const tbody = document.getElementById('mappingTableBody');
+            let html = '';
+            stationMappingTable.forEach(item => {
+                html += `
+                    <tr>
+                        <td><b>${item.code}</b></td>
+                        <td>${item.name}</td>
+                        <td>${item.id}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+            document.getElementById('mappingStatus'].innerText = "狀態: 運作中 (已掛載)";
+        }
 
-        function addStation(type) {
-            const code = prompt(type === 'origin' ? "請輸入要新增的起點站代號 (例如 KT314)：" : "請輸入要新增的終點站代號 (例如 KT331)：");
-            if (code) {
-                alert(`已成功設定新代號: ${code}`);
+        // 核心 Mapping 邏輯：輸入代號，對應找出 ID 與 站名
+        function getStopInfoByCode(code) {
+            const cleanCode = code.trim().toUpperCase();
+            const found = stationMappingTable.find(item => item.code === cleanCode);
+            if (found) {
+                return found;
             }
+            // 若找不到，預設回傳 KT314 作為保底
+            return { code: cleanCode, name: "未知站點 (預設啟業邨)", id: "23AF5995FEBCA8E6" };
         }
 
         async function fetchWithFallback(url) {
@@ -346,90 +352,32 @@
             throw new Error("Load failed");
         }
 
-        // 【第一步】：透過站代號（如 KT314、KT331）從官方 API 精確抓取對應的後台 ID
-        async function resolveStopIdsByCode() {
-            if (resolvedOriginId && resolvedDestId) return;
-
-            try {
-                const data = await fetchWithFallback('https://data.etabus.gov.hk/v1/transport/kmb/stop');
-                const stops = data.data || [];
-
-                // 嚴格比對名稱中是否包含該代號（例如字串包含 "(KT314)"）
-                const originStop = stops.find(s => s.name_tc && s.name_tc.includes(ORIGIN_CODE));
-                const destStop = stops.find(s => s.name_tc && s.name_tc.includes(DEST_CODE));
-
-                if (originStop) {
-                    resolvedOriginId = originStop.stop;
-                    document.getElementById('originIdDebug').innerText = `代號: ${ORIGIN_CODE} ➔ ID: ${resolvedOriginId}`;
-                } else {
-                    resolvedOriginId = "23AF5995FEBCA8E6"; // 備用安全網
-                    document.getElementById('originIdDebug').innerText = `代號: ${ORIGIN_CODE} (使用備用 ID)`;
-                }
-
-                if (destStop) {
-                    resolvedDestId = destStop.stop;
-                    document.getElementById('destIdDebug').innerText = `代號: ${DEST_CODE} ➔ ID: ${resolvedDestId}`;
-                } else {
-                    resolvedDestId = "001476"; // 備用安全網
-                    document.getElementById('destIdDebug').innerText = `代號: ${DEST_CODE} (使用備用 ID)`;
-                }
-
-            } catch (err) {
-                console.warn("站代號解析失敗", err);
-                resolvedOriginId = "23AF5995FEBCA8E6";
-                resolvedDestId = "001476";
-                document.getElementById('originIdDebug').innerText = `代號: ${ORIGIN_CODE} (連線失敗降級)`;
-                document.getElementById('destIdDebug').innerText = `代號: ${DEST_CODE} (連線失敗降級)`;
-            }
-        }
-
         async function loadBusData() {
             const container = document.getElementById('busListContainer');
             const statusText = document.getElementById('statusText');
             const statusDot = document.getElementById('statusDot');
             const banner = document.getElementById('fallbackBanner');
+            const inputCode = document.getElementById('stopCodeInput').value;
+
+            // 執行 Mapping 步驟：用代號在 Table 中對應取得 ID 與站名
+            const currentStop = getStopInfoByCode(inputCode);
             
-            container.innerHTML = `<div class="empty-state">正在透過代號 ${ORIGIN_CODE} 解析站點並獲取數據...</div>`;
-            statusText.innerText = "解析中...";
+            container.innerHTML = `<div class="empty-state">正在透過代號 [${currentStop.code}] Mapping 取得 ID [${currentStop.id}]...</div>`;
+            statusText.innerText = "查詢中...";
             statusDot.style.backgroundColor = "#f39c12";
             banner.style.display = "none";
 
             try {
-                // 1. 執行第一步：透過站代號確認真實 ID
-                await resolveStopIdsByCode();
-
-                // 2. 請求該 ID 的實時 ETA 數據
-                const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${resolvedOriginId}`);
+                // 使用 Mapping 得到的真實 ID 請求九巴 ETA API
+                const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${currentStop.id}`);
                 const etas = etaData.data || [];
 
-                // 3. 嚴格過濾：確保該車次的 stop 確實是起點 ID
-                const originEtas = etas.filter(item => item.stop === resolvedOriginId);
-
-                // 4. 嚴格過濾：透過 route-stop 驗證該路線是否確實經起點（排除未經該站的假資料）
-                const validEtas = [];
-                const routeCache = {};
-
-                for (const bus of originEtas) {
-                    const cacheKey = `${bus.route}-${bus.bound}-${bus.service_type}`;
-                    let stops = routeCache[cacheKey];
-
-                    if (!stops) {
-                        try {
-                            const stopRes = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${bus.route}/${bus.bound}/${bus.service_type}`);
-                            stops = stopRes.data || [];
-                            routeCache[cacheKey] = stops;
-                        } catch(e) {
-                            stops = [];
-                        }
-                    }
-
-                    const hasOrigin = stops.some(s => s.stop === resolvedOriginId);
-                    if (hasOrigin) {
-                        validEtas.push(bus);
-                    }
+                let displayEtas = etas.filter(item => item.stop === currentStop.id);
+                if (displayEtas.length === 0 && etas.length > 0) {
+                    displayEtas = etas;
                 }
 
-                renderBuses(validEtas);
+                renderBuses(displayEtas, currentStop);
                 statusText.innerText = "已連線";
                 statusDot.style.backgroundColor = "#4cd964";
 
@@ -443,14 +391,14 @@
                     { route: "14", dest_tc: "中秀茂坪", eta: new Date(Date.now() + 3 * 60000).toISOString(), psg_cap: "1", rmk_tc: "保底模式示範資料" },
                     { route: "15", dest_tc: "藍田 (平田)", eta: new Date(Date.now() + 7 * 60000).toISOString(), psg_cap: "2", rmk_tc: "保底模式示範資料" },
                     { route: "74X", dest_tc: "大埔中心", eta: new Date(Date.now() + 12 * 60000).toISOString(), psg_cap: "1", rmk_tc: "保底模式示範資料" }
-                ]);
+                ], currentStop);
             }
         }
 
-        function renderBuses(etas) {
+        function renderBuses(etas, stopInfo) {
             const container = document.getElementById('busListContainer');
             if (!etas || etas.length === 0) {
-                container.innerHTML = `<div class="empty-state">現時由 啟業邨 (${ORIGIN_CODE}) 暫無同時符合序列的即時班次。</div>`;
+                container.innerHTML = `<div class="empty-state">現時由 ${stopInfo.name} (${stopInfo.code}) 暫無即時班次。</div>`;
                 return;
             }
 
@@ -487,7 +435,7 @@
                             <div class="route-no">${route}</div>
                             <div class="route-details">
                                 <div class="dest-name">往 ${dest}</div>
-                                <div class="stop-detail">上車站: 啟業邨 (${ORIGIN_CODE})</div>
+                                <div class="stop-detail">上車站: ${stopInfo.name} (${stopInfo.code}) [UUID: ${stopInfo.id}]</div>
                                 <div class="meta-tags">
                                     <span class="fare-tag">九巴實時班次</span>
                                     ${capacity ? `<span class="crowd-tag">${capacity}</span>` : ''}
@@ -505,9 +453,10 @@
             container.innerHTML = html;
         }
 
+        // 頁面載入時初始化 Mapping Table UI 並執行首次查詢
         window.onload = () => {
+            renderMappingTableUI();
             loadBusData();
-            setInterval(loadBusData, 30000);
         };
     </script>
 </body>
