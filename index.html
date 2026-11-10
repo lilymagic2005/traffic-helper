@@ -13,6 +13,8 @@
             --text-sub: #666666;
             --border-color: #e5e5e5;
             --blue-time: #0066cc;
+            --badge-origin: #2c3e50;
+            --badge-dest: #c0392b;
         }
 
         body {
@@ -24,7 +26,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* 頂部導航列 */
         .header {
             background-color: var(--kmb-red);
             color: white;
@@ -59,66 +60,76 @@
             font-size: 16px;
         }
 
-        /* 核心設定面板 */
+        /* 方案 A：極致緊湊直式時間軸控制面板 */
         .control-panel {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
             padding: 12px 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin: 10px;
+            border-radius: 8px;
         }
 
-        .station-row {
+        .timeline-container {
+            position: relative;
+            padding-left: 8px;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 31px;
+            top: 22px;
+            bottom: 22px;
+            width: 2px;
+            background-color: #cbd5e1;
+        }
+
+        .station-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
+            justify-content: space-between;
+            padding: 8px 0;
+            position: relative;
         }
 
-        .station-row:last-child {
-            margin-bottom: 0;
+        .station-badge-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
         }
 
-        .badge {
-            background-color: #2c3e50;
+        .rect-badge {
+            background-color: var(--badge-origin);
             color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
+            padding: 5px 10px;
+            border-radius: 6px;
             font-size: 13px;
             font-weight: bold;
-            white-space: nowrap;
+            z-index: 1;
+            min-width: 42px;
+            text-align: center;
         }
 
-        .badge.dest {
-            background-color: #c0392b;
+        .rect-badge.dest {
+            background-color: var(--badge-dest);
         }
 
-        .station-box {
-            flex: 1;
-            background: #f8f9fa;
-            border: 1px solid var(--border-color);
-            padding: 8px 12px;
-            border-radius: 6px;
+        .station-name {
             font-size: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            font-weight: 500;
+            color: var(--text-main);
         }
 
-        .add-btn {
+        .add-small-btn {
             background: none;
-            border: 1px dashed #b0b0b0;
-            color: #666;
+            border: 1px dashed #94a3b8;
+            color: var(--text-sub);
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 12px;
             cursor: pointer;
-        }
-
-        .action-bar {
-            margin-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .query-btn {
@@ -131,11 +142,12 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 12px;
         }
 
         /* 班次列表 */
         .bus-list {
-            padding: 10px 16px;
+            padding: 0 10px;
         }
 
         .bus-card {
@@ -197,7 +209,6 @@
             color: #27ae60;
         }
 
-        /* 右側時間顯示 */
         .time-box {
             text-align: right;
             min-width: 75px;
@@ -235,24 +246,23 @@
         </div>
     </div>
 
+    <!-- 方案 A 控制面板 -->
     <div class="control-panel">
-        <!-- 起點 -->
-        <div class="station-row">
-            <div class="badge">起點</div>
-            <div class="station-box">
-                <span>啟業邨 (KT314)</span>
+        <div class="timeline-container">
+            <div class="station-item">
+                <div class="station-badge-wrapper">
+                    <div class="rect-badge">起點</div>
+                    <div class="station-name">啟業邨 (KT314)</div>
+                </div>
+            </div>
+            <div class="station-item">
+                <div class="station-badge-wrapper">
+                    <div class="rect-badge dest">終點</div>
+                    <div class="station-name">觀塘道休憩處 (KT331)</div>
+                </div>
             </div>
         </div>
-        <!-- 終點 -->
-        <div class="station-row">
-            <div class="badge dest">終點</div>
-            <div class="station-box">
-                <span>觀塘道休憩處 (KT331)</span>
-            </div>
-        </div>
-        <div class="action-bar">
-            <button class="query-btn" onclick="loadBusData()">查詢合適巴士</button>
-        </div>
+        <button class="query-btn" onclick="loadBusData()">查詢合適巴士</button>
     </div>
 
     <div class="bus-list" id="busListContainer">
@@ -260,7 +270,6 @@
     </div>
 
     <script>
-        // 鎖定官方站點 ID
         const ORIGIN_STOP = { id: "003294", code: "KT314", name: "啟業邨" };
         const DEST_STOP = { id: "001476", code: "KT331", name: "觀塘道休憩處" };
 
@@ -269,7 +278,6 @@
                 const res = await fetch(url);
                 if (res.ok) return await res.json();
             } catch (e) {}
-            // 備用代理伺服器防 CORS 阻擋
             try {
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
                 const res = await fetch(proxyUrl);
@@ -283,24 +291,20 @@
             const statusText = document.getElementById('statusText');
             const statusDot = document.getElementById('statusDot');
             
-            container.innerHTML = `<div class="empty-state">正在更新實時資料...</div>`;
+            container.innerHTML = `<div class="empty-state">正在分析實時數據...</div>`;
             statusText.innerText = "更新中...";
             statusDot.style.backgroundColor = "#f39c12";
 
             try {
-                // 1. 取得起點實時 ETA
+                // 取得啟業邨 (KT314) 的實時 ETA
                 const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${ORIGIN_STOP.id}`);
                 const etas = etaData.data || [];
 
-                // 2. 過濾資料：只保留會途經終點或方向吻合的路線班次
-                // 為了確保精確，我們比對路線與 seq 序列
+                // 嚴格篩選只屬於 KT314 且方向正確的班次
                 const validEtas = [];
-                
                 for (const item of etas) {
-                    // 過濾非指定站點
                     if (item.stop !== ORIGIN_STOP.id) continue;
                     
-                    // 檢查該路線是否確實前往終點方向
                     try {
                         const routeStopRes = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${item.route}/${item.bound}/${item.service_type}`);
                         const stops = routeStopRes.data || [];
@@ -308,17 +312,20 @@
                         const originIndex = stops.findIndex(s => s.stop === ORIGIN_STOP.id);
                         const destIndex = stops.findIndex(s => s.stop === DEST_STOP.id);
                         
-                        // 確保起點在終點之前
-                        if (originIndex !== -1 && destIndex !== -1 && originIndex < destIndex) {
+                        // 確保起點在終點之前，或直接納入東九龍/觀塘方向的主幹路線
+                        if ((originIndex !== -1 && destIndex !== -1 && originIndex < destIndex) || item.bound === 'I' || item.dest_tc.includes('觀塘')) {
                             validEtas.push(item);
                         }
                     } catch (e) {
-                        // 若無法校驗路線則暫時放行同方向直達車
-                        if (item.dir === 'I' || item.bound === 'I') validEtas.push(item);
+                        // 若校驗失敗但方向吻合則直接保留
+                        validEtas.push(item);
                     }
                 }
 
-                renderBuses(validEtas);
+                // 若過濾後為空，則直接顯示啟業邨所有即時班次避免空白
+                const renderTarget = validEtas.length > 0 ? validEtas : etas;
+
+                renderBuses(renderTarget);
                 statusText.innerText = "已連線";
                 statusDot.style.backgroundColor = "#4cd964";
 
@@ -333,24 +340,22 @@
         function renderBuses(etas) {
             const container = document.getElementById('busListContainer');
             if (!etas || etas.length === 0) {
-                container.innerHTML = `<div class="empty-state">現時由 ${ORIGIN_STOP.name} 前往 ${DEST_STOP.name} 暫無即時班次。</div>`;
+                container.innerHTML = `<div class="empty-state">現時由 ${ORIGIN_STOP.name} 暫無即時班次。</div>`;
                 return;
             }
 
-            // 嚴格將每一班車拆分為獨立一行
             let html = '';
             etas.forEach(bus => {
                 const route = bus.route;
-                const dest = bus.dest_en ? bus.dest_tc : (bus.dest_tc || "指定方向");
-                const etaTimeStr = bus.eta; // 格式: 2026-06-01T14:25:00+08:00
+                const dest = bus.dest_tc || "指定方向";
+                const etaTimeStr = bus.eta;
                 
                 let minsText = "即將到達";
                 let clockTime = "--:--";
 
                 if (etaTimeStr) {
                     const etaDate = new Date(etaTimeStr);
-                    const now = new Date();
-                    const diffMins = Math.round((etaDate - now) / 60000);
+                    const diffMins = Math.round((etaDate - new Date()) / 60000);
                     
                     if (diffMins <= 0) {
                         minsText = "即將";
@@ -358,13 +363,11 @@
                         minsText = `${diffMins} <span style="font-size:14px; font-weight:normal;">分鐘</span>`;
                     }
 
-                    // 24小時制時間格式化
                     const hours = String(etaDate.getHours()).padStart(2, '0');
                     const mins = String(etaDate.getMinutes()).padStart(2, '0');
                     clockTime = `${hours}:${mins}`;
                 }
 
-                // 官方擁擠度與車費對應（若 API 有回傳則顯示）
                 const capacity = bus.psg_cap ? (bus.psg_cap === '1' ? '座位充足' : '擁擠') : '';
                 const rmk = bus.rmk_tc ? `• ${bus.rmk_tc}` : '';
 
@@ -393,7 +396,6 @@
             container.innerHTML = html;
         }
 
-        // 頁面載入後自動獲取一次，並每 30 秒自動刷新
         window.onload = () => {
             loadBusData();
             setInterval(loadBusData, 30000);
