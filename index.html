@@ -262,14 +262,14 @@
             <div class="station-item">
                 <div class="station-badge-wrapper">
                     <div class="rect-badge">起點</div>
-                    <div class="station-name" id="originName">啟業邨 (KT314)</div>
+                    <div class="station-name">啟業邨 (KT314)</div>
                 </div>
                 <button class="add-small-btn" onclick="addStation('origin')">+ 新增起點</button>
             </div>
             <div class="station-item">
                 <div class="station-badge-wrapper">
                     <div class="rect-badge dest">終點</div>
-                    <div class="station-name" id="destName">觀塘道休憩處 (KT331)</div>
+                    <div class="station-name">觀塘道休憩處 (KT331)</div>
                 </div>
                 <button class="add-small-btn" onclick="addStation('dest')">+ 新增終點</button>
             </div>
@@ -278,20 +278,17 @@
     </div>
 
     <div class="bus-list" id="busListContainer">
-        <div class="empty-state">正在自動配對站點並載入實時數據...</div>
+        <div class="empty-state">正在尋找同時途經起終點的班次...</div>
     </div>
 
     <div class="app-version">
-        KMB Real-time Assistant | Version: v2.6.1-stable (Build 2026.06) | Engine: Dynamic Stop Auto-Resolver
+        KMB Real-time Assistant | Version: v2.7.0-strict (Build 2026.06) | Engine: Dual-Stop Sequence Verification
     </div>
 
     <script>
-        // 預设代號，程式將自動解析其對應的真實 API Stop ID
-        let currentOriginCode = "KT314";
-        let currentDestCode = "KT331";
-        
-        let resolvedOriginId = null;
-        let resolvedDestId = null;
+        // 固定鎖定起終點官方 Stop ID
+        const ORIGIN_STOP = { id: "003294", code: "KT314", name: "啟業邨" };
+        const DEST_STOP = { id: "001476", code: "KT331", name: "觀塘道休憩處" };
 
         function addStation(type) {
             const name = prompt(type === 'origin' ? "請輸入要新增的起點站名或代號：" : "請輸入要新增的終點站名或代號：");
@@ -313,45 +310,53 @@
             throw new Error("Load failed");
         }
 
-        // 動態尋找九巴官方站點清單以取得正確的 Stop ID
-        async function resolveStopIds() {
-            if (resolvedOriginId && resolvedDestId) return;
-            try {
-                const data = await fetchWithFallback('https://data.etabus.gov.hk/v1/transport/kmb/stop');
-                const stops = data.data || [];
-                
-                // 尋找啟業邨相關站點 (通常包含 KT314 或 啟業邨)
-                const originStop = stops.find(s => s.name_tc.includes('啟業邨') || s.stop === "003294");
-                const destStop = stops.find(s => s.name_tc.includes('觀塘道休憩處') || s.stop === "001476");
-
-                if (originStop) resolvedOriginId = originStop.stop;
-                if (destStop) resolvedDestId = destStop.stop;
-            } catch (e) {
-                console.warn("站點自動解析失敗，使用預設備用 ID");
-            }
-
-            // 若自動尋找失敗則帶入穩健的備用 ID
-            if (!resolvedOriginId) resolvedOriginId = "003294";
-            if (!resolvedDestId) resolvedDestId = "001476";
-        }
-
         async function loadBusData() {
             const container = document.getElementById('busListContainer');
             const statusText = document.getElementById('statusText');
             const statusDot = document.getElementById('statusDot');
             
-            container.innerHTML = `<div class="empty-state">正在校驗站點並讀取實時班次...</div>`;
-            statusText.innerText = "更新中...";
+            container.innerHTML = `<div class="empty-state">正在過濾起終點車輛序列...</div>`;
+            statusText.innerText = "過濾中...";
             statusDot.style.backgroundColor = "#f39c12";
 
             try {
-                await resolveStopIds();
-
-                // 請求真實 Stop ID 的實時 ETA
-                const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${resolvedOriginId}`);
+                // 1. 取得起點實時 ETA
+                const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${ORIGIN_STOP.id}`);
                 const etas = etaData.data || [];
 
-                renderBuses(etas);
+                // 2. 雙重過濾：確保該班次確實經過起點與終點
+                const validEtas = [];
+                
+                // 為避免重複請求相同路線，建立快取
+                const routeStopCache = {};
+
+                for (const item of etas) {
+                    if (item.stop !== ORIGIN_STOP.id) continue;
+
+                    const cacheKey = `${item.route}-${item.bound}-${item.service_type}`;
+                    let stops = routeStopCache[cacheKey];
+
+                    if (!stops) {
+                        try {
+                            const routeStopRes = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${item.route}/${item.bound}/${item.service_type}`);
+                            stops = routeStopRes.data || [];
+                            routeStopCache[cacheKey] = stops;
+                        } catch (e) {
+                            stops = [];
+                        }
+                    }
+
+                    // 尋找起點與終點在該路線中的站點位置
+                    const originIdx = stops.findIndex(s => s.stop === ORIGIN_STOP.id);
+                    const destIdx = stops.findIndex(s => s.stop === DEST_STOP.id);
+
+                    // 嚴格判定：起點與終點必須同時存在，且起點順序在終點之前
+                    if (originIdx !== -1 && destIdx !== -1 && originIdx < destIdx) {
+                        validEtas.push(item);
+                    }
+                }
+
+                renderBuses(validEtas);
                 statusText.innerText = "已連線";
                 statusDot.style.backgroundColor = "#4cd964";
 
@@ -359,14 +364,14 @@
                 console.error(err);
                 statusText.innerText = "連線異常";
                 statusDot.style.backgroundColor = "#e74c3c";
-                container.innerHTML = `<div class="empty-state">無法連線至九巴伺服器。<br>錯誤細節: ${err.message}</div>`;
+                container.innerHTML = `<div class="empty-state">無法連線至九巴伺服器，請點擊右上角按鈕重新整理。</div>`;
             }
         }
 
         function renderBuses(etas) {
             const container = document.getElementById('busListContainer');
             if (!etas || etas.length === 0) {
-                container.innerHTML = `<div class="empty-state">現時由 啟業邨 (KT314) 暫無即時班次。<br><span style="font-size:12px; color:#aaa;">(已成功連線至站點 ID: ${resolvedOriginId})</span></div>`;
+                container.innerHTML = `<div class="empty-state">現時由 ${ORIGIN_STOP.name} 前往 ${DEST_STOP.name} 暫無同時途經兩站的即時班次。</div>`;
                 return;
             }
 
@@ -403,7 +408,7 @@
                             <div class="route-no">${route}</div>
                             <div class="route-details">
                                 <div class="dest-name">往 ${dest}</div>
-                                <div class="stop-detail">上車站: 啟業邨 (KT314)</div>
+                                <div class="stop-detail">上車站: ${ORIGIN_STOP.name} (${ORIGIN_STOP.code}) ➔ 目的地: ${DEST_STOP.name}</div>
                                 <div class="meta-tags">
                                     <span class="fare-tag">九巴實時班次</span>
                                     ${capacity ? `<span class="crowd-tag">${capacity}</span>` : ''}
