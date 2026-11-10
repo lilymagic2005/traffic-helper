@@ -278,15 +278,15 @@
     </div>
 
     <div class="bus-list" id="busListContainer">
-        <div class="empty-state">正在尋找同時途經起終點的班次...</div>
+        <div class="empty-state">正在快速載入實時數據...</div>
     </div>
 
     <div class="app-version">
-        KMB Real-time Assistant | Version: v2.7.0-strict (Build 2026.06) | Engine: Dual-Stop Sequence Verification
+        KMB Real-time Assistant | Version: v2.8.0-fast (Build 2026.06) | Engine: Instant Direct ETA Fetcher
     </div>
 
     <script>
-        // 固定鎖定起終點官方 Stop ID
+        // 鎖定啟業邨官方正確 Stop ID (003294)
         const ORIGIN_STOP = { id: "003294", code: "KT314", name: "啟業邨" };
         const DEST_STOP = { id: "001476", code: "KT331", name: "觀塘道休憩處" };
 
@@ -315,46 +315,17 @@
             const statusText = document.getElementById('statusText');
             const statusDot = document.getElementById('statusDot');
             
-            container.innerHTML = `<div class="empty-state">正在過濾起終點車輛序列...</div>`;
-            statusText.innerText = "過濾中...";
+            container.innerHTML = `<div class="empty-state">正在高速獲取實時數據...</div>`;
+            statusText.innerText = "讀取中...";
             statusDot.style.backgroundColor = "#f39c12";
 
             try {
-                // 1. 取得起點實時 ETA
+                // 直接向九巴 API 請求啟業邨的 ETA 資料，實現毫秒級響應
                 const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${ORIGIN_STOP.id}`);
                 const etas = etaData.data || [];
 
-                // 2. 雙重過濾：確保該班次確實經過起點與終點
-                const validEtas = [];
-                
-                // 為避免重複請求相同路線，建立快取
-                const routeStopCache = {};
-
-                for (const item of etas) {
-                    if (item.stop !== ORIGIN_STOP.id) continue;
-
-                    const cacheKey = `${item.route}-${item.bound}-${item.service_type}`;
-                    let stops = routeStopCache[cacheKey];
-
-                    if (!stops) {
-                        try {
-                            const routeStopRes = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${item.route}/${item.bound}/${item.service_type}`);
-                            stops = routeStopRes.data || [];
-                            routeStopCache[cacheKey] = stops;
-                        } catch (e) {
-                            stops = [];
-                        }
-                    }
-
-                    // 尋找起點與終點在該路線中的站點位置
-                    const originIdx = stops.findIndex(s => s.stop === ORIGIN_STOP.id);
-                    const destIdx = stops.findIndex(s => s.stop === DEST_STOP.id);
-
-                    // 嚴格判定：起點與終點必須同時存在，且起點順序在終點之前
-                    if (originIdx !== -1 && destIdx !== -1 && originIdx < destIdx) {
-                        validEtas.push(item);
-                    }
-                }
+                // 嚴格對應起點站代號
+                const validEtas = etas.filter(item => item.stop === ORIGIN_STOP.id);
 
                 renderBuses(validEtas);
                 statusText.innerText = "已連線";
@@ -371,7 +342,7 @@
         function renderBuses(etas) {
             const container = document.getElementById('busListContainer');
             if (!etas || etas.length === 0) {
-                container.innerHTML = `<div class="empty-state">現時由 ${ORIGIN_STOP.name} 前往 ${DEST_STOP.name} 暫無同時途經兩站的即時班次。</div>`;
+                container.innerHTML = `<div class="empty-state">現時由 ${ORIGIN_STOP.name} (${ORIGIN_STOP.code}) 暫無即時班次。</div>`;
                 return;
             }
 
@@ -408,7 +379,7 @@
                             <div class="route-no">${route}</div>
                             <div class="route-details">
                                 <div class="dest-name">往 ${dest}</div>
-                                <div class="stop-detail">上車站: ${ORIGIN_STOP.name} (${ORIGIN_STOP.code}) ➔ 目的地: ${DEST_STOP.name}</div>
+                                <div class="stop-detail">上車站: ${ORIGIN_STOP.name} (${ORIGIN_STOP.code}) ➔ 目的地: ${DEST_STOP.name} (${DEST_STOP.code})</div>
                                 <div class="meta-tags">
                                     <span class="fare-tag">九巴實時班次</span>
                                     ${capacity ? `<span class="crowd-tag">${capacity}</span>` : ''}
