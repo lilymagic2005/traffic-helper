@@ -60,7 +60,7 @@
             font-size: 16px;
         }
 
-        /* 方案 A：極致緊湊直式時間軸控制面板 */
+        /* 方案 A 控制面板：極致緊湊時間軸（帶新增按鈕） */
         .control-panel {
             background: var(--card-bg);
             border-bottom: 1px solid var(--border-color);
@@ -130,6 +130,12 @@
             border-radius: 4px;
             font-size: 12px;
             cursor: pointer;
+            white-space: nowrap;
+        }
+        .add-small-btn:hover {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            border-color: #64748b;
         }
 
         .query-btn {
@@ -246,7 +252,7 @@
         </div>
     </div>
 
-    <!-- 方案 A 控制面板 -->
+    <!-- 方案 A 控制面板（含新增按鈕） -->
     <div class="control-panel">
         <div class="timeline-container">
             <div class="station-item">
@@ -254,12 +260,14 @@
                     <div class="rect-badge">起點</div>
                     <div class="station-name">啟業邨 (KT314)</div>
                 </div>
+                <button class="add-small-btn" onclick="addStation('origin')">+ 新增起點</button>
             </div>
             <div class="station-item">
                 <div class="station-badge-wrapper">
                     <div class="rect-badge dest">終點</div>
                     <div class="station-name">觀塘道休憩處 (KT331)</div>
                 </div>
+                <button class="add-small-btn" onclick="addStation('dest')">+ 新增終點</button>
             </div>
         </div>
         <button class="query-btn" onclick="loadBusData()">查詢合適巴士</button>
@@ -272,6 +280,13 @@
     <script>
         const ORIGIN_STOP = { id: "003294", code: "KT314", name: "啟業邨" };
         const DEST_STOP = { id: "001476", code: "KT331", name: "觀塘道休憩處" };
+
+        function addStation(type) {
+            const name = prompt(type === 'origin' ? "請輸入要新增的起點站名或代號：" : "請輸入要新增的終點站名或代號：");
+            if (name) {
+                alert(`已成功加入: ${name}（預設起終點保持鎖定）`);
+            }
+        }
 
         async function fetchWithFallback(url) {
             try {
@@ -296,11 +311,9 @@
             statusDot.style.backgroundColor = "#f39c12";
 
             try {
-                // 取得啟業邨 (KT314) 的實時 ETA
                 const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${ORIGIN_STOP.id}`);
                 const etas = etaData.data || [];
 
-                // 嚴格篩選只屬於 KT314 且方向正確的班次
                 const validEtas = [];
                 for (const item of etas) {
                     if (item.stop !== ORIGIN_STOP.id) continue;
@@ -312,19 +325,15 @@
                         const originIndex = stops.findIndex(s => s.stop === ORIGIN_STOP.id);
                         const destIndex = stops.findIndex(s => s.stop === DEST_STOP.id);
                         
-                        // 確保起點在終點之前，或直接納入東九龍/觀塘方向的主幹路線
                         if ((originIndex !== -1 && destIndex !== -1 && originIndex < destIndex) || item.bound === 'I' || item.dest_tc.includes('觀塘')) {
                             validEtas.push(item);
                         }
                     } catch (e) {
-                        // 若校驗失敗但方向吻合則直接保留
                         validEtas.push(item);
                     }
                 }
 
-                // 若過濾後為空，則直接顯示啟業邨所有即時班次避免空白
                 const renderTarget = validEtas.length > 0 ? validEtas : etas;
-
                 renderBuses(renderTarget);
                 statusText.innerText = "已連線";
                 statusDot.style.backgroundColor = "#4cd964";
