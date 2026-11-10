@@ -79,14 +79,14 @@
             position: absolute;
             left: 31px;
             top: 22px;
-            bottom: 22px;
+            bottom: 42px;
             width: 2px;
             background-color: #cbd5e1;
         }
 
         .station-item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
             padding: 8px 0;
             position: relative;
@@ -94,7 +94,7 @@
 
         .station-badge-wrapper {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 12px;
             flex: 1;
         }
@@ -109,16 +109,34 @@
             z-index: 1;
             min-width: 42px;
             text-align: center;
+            margin-top: 2px;
         }
 
         .rect-badge.dest {
             background-color: var(--badge-dest);
         }
 
+        .station-info-text {
+            display: flex;
+            flex-direction: column;
+        }
+
         .station-name {
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-main);
+        }
+
+        .station-id-debug {
+            font-size: 11px;
+            color: #2e7d32;
+            font-family: monospace;
+            background: #e8f5e9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 2px;
+            display: inline-block;
+            border: 1px solid #c8e6c9;
         }
 
         .add-small-btn {
@@ -130,11 +148,6 @@
             font-size: 12px;
             cursor: pointer;
             white-space: nowrap;
-        }
-        .add-small-btn:hover {
-            background-color: #f1f5f9;
-            color: var(--text-main);
-            border-color: #64748b;
         }
 
         .query-btn {
@@ -276,41 +289,47 @@
             <div class="station-item">
                 <div class="station-badge-wrapper">
                     <div class="rect-badge">起點</div>
-                    <div class="station-name" id="originNameDisplay">啟業邨 (KT314)</div>
+                    <div class="station-info-text">
+                        <div class="station-name">啟業邨</div>
+                        <div class="station-id-debug" id="originIdDebug">正在透過代號 KT314 尋找 ID...</div>
+                    </div>
                 </div>
-                <button class="add-small-btn" onclick="addStation('origin')">+ 新增起點</button>
+                <button class="add-small-btn" onclick="addStation('origin')">+ 新增</button>
             </div>
             <div class="station-item">
                 <div class="station-badge-wrapper">
                     <div class="rect-badge dest">終點</div>
-                    <div class="station-name" id="destNameDisplay">觀塘道休憩處 (KT331)</div>
+                    <div class="station-info-text">
+                        <div class="station-name">觀塘道休憩處</div>
+                        <div class="station-id-debug" id="destIdDebug">正在透過代號 KT331 尋找 ID...</div>
+                    </div>
                 </div>
-                <button class="add-small-btn" onclick="addStation('dest')">+ 新增終點</button>
+                <button class="add-small-btn" onclick="addStation('dest')">+ 新增</button>
             </div>
         </div>
         <button class="query-btn" onclick="loadBusData()">查詢合適巴士</button>
     </div>
 
     <div class="bus-list" id="busListContainer">
-        <div class="empty-state">正在從 API 動態尋找站點 ID 並載入數據...</div>
+        <div class="empty-state">正在透過站代號動態解析並載入實時數據...</div>
     </div>
 
     <div class="app-version">
-        KMB Real-time Assistant | Version: v2.11.0-dynamic (Build 2026.06) | Engine: Dynamic API Stop Resolution
+        KMB Real-time Assistant | Version: v2.13.0-code-resolver (Build 2026.06) | Engine: Precise Code-Based Stop Resolution
     </div>
 
     <script>
-        // 設定目標代號，不寫死 ID，由 API 動態解析
-        let targetOriginCode = "KT314";
-        let targetDestCode = "KT331";
-        
+        // 設定起點與終點的「站代號」，由程式自動去 API 抓取對應的真實 ID
+        const ORIGIN_CODE = "KT314";
+        const DEST_CODE = "KT331";
+
         let resolvedOriginId = null;
         let resolvedDestId = null;
 
         function addStation(type) {
-            const name = prompt(type === 'origin' ? "請輸入要新增的起點站名或代號：" : "請輸入要新增的終點站名或代號：");
-            if (name) {
-                alert(`已成功加入: ${name}`);
+            const code = prompt(type === 'origin' ? "請輸入要新增的起點站代號 (例如 KT314)：" : "請輸入要新增的終點站代號 (例如 KT331)：");
+            if (code) {
+                alert(`已成功設定新代號: ${code}`);
             }
         }
 
@@ -327,35 +346,41 @@
             throw new Error("Load failed");
         }
 
-        // 【第一步】：從官方 API 動態 fetch 並確認巴士站的後台 ID
-        async function resolveStationIds() {
+        // 【第一步】：透過站代號（如 KT314、KT331）從官方 API 精確抓取對應的後台 ID
+        async function resolveStopIdsByCode() {
             if (resolvedOriginId && resolvedDestId) return;
 
             try {
-                // 呼叫九巴官方站點清單 API
                 const data = await fetchWithFallback('https://data.etabus.gov.hk/v1/transport/kmb/stop');
                 const stops = data.data || [];
 
-                // 尋找符合 KT314 或包含啟業邨的站點
-                const originStop = stops.find(s => s.stop_id === targetOriginCode || s.name_tc.includes(targetOriginCode) || s.name_tc.includes('啟業邨'));
-                const destStop = stops.find(s => s.stop_id === targetDestCode || s.name_tc.includes(targetDestCode) || s.name_tc.includes('觀塘道休憩處'));
+                // 嚴格比對名稱中是否包含該代號（例如字串包含 "(KT314)"）
+                const originStop = stops.find(s => s.name_tc && s.name_tc.includes(ORIGIN_CODE));
+                const destStop = stops.find(s => s.name_tc && s.name_tc.includes(DEST_CODE));
 
                 if (originStop) {
                     resolvedOriginId = originStop.stop;
-                    console.log(`[第一步確認成功] 啟業邨 ID: ${resolvedOriginId} (${originStop.name_tc})`);
+                    document.getElementById('originIdDebug').innerText = `代號: ${ORIGIN_CODE} ➔ ID: ${resolvedOriginId}`;
+                } else {
+                    resolvedOriginId = "23AF5995FEBCA8E6"; // 備用安全網
+                    document.getElementById('originIdDebug').innerText = `代號: ${ORIGIN_CODE} (使用備用 ID)`;
                 }
 
                 if (destStop) {
                     resolvedDestId = destStop.stop;
-                    console.log(`[第一步確認成功] 觀塘道休憩處 ID: ${resolvedDestId} (${destStop.name_tc})`);
+                    document.getElementById('destIdDebug').innerText = `代號: ${DEST_CODE} ➔ ID: ${resolvedDestId}`;
+                } else {
+                    resolvedDestId = "001476"; // 備用安全網
+                    document.getElementById('destIdDebug').innerText = `代號: ${DEST_CODE} (使用備用 ID)`;
                 }
-            } catch (err) {
-                console.warn("動態解析站點 ID 發生例外，將採用備用方案", err);
-            }
 
-            // 安全網：若 API 列表一時未能返回，強制指定已知的正確 ID
-            if (!resolvedOriginId) resolvedOriginId = "23AF5995FEBCA8E6"; // 啟業邨正確 UUID
-            if (!resolvedDestId) resolvedDestId = "001476";     // 觀塘道休憩處 ID
+            } catch (err) {
+                console.warn("站代號解析失敗", err);
+                resolvedOriginId = "23AF5995FEBCA8E6";
+                resolvedDestId = "001476";
+                document.getElementById('originIdDebug').innerText = `代號: ${ORIGIN_CODE} (連線失敗降級)`;
+                document.getElementById('destIdDebug').innerText = `代號: ${DEST_CODE} (連線失敗降級)`;
+            }
         }
 
         async function loadBusData() {
@@ -364,26 +389,47 @@
             const statusDot = document.getElementById('statusDot');
             const banner = document.getElementById('fallbackBanner');
             
-            container.innerHTML = `<div class="empty-state">正在透過 API 確認站點 ID 並獲取實時數據...</div>`;
+            container.innerHTML = `<div class="empty-state">正在透過代號 ${ORIGIN_CODE} 解析站點並獲取數據...</div>`;
             statusText.innerText = "解析中...";
             statusDot.style.backgroundColor = "#f39c12";
             banner.style.display = "none";
 
             try {
-                // 執行第一步：動態從 API 取得最新正確的站點 ID
-                await resolveStationIds();
+                // 1. 執行第一步：透過站代號確認真實 ID
+                await resolveStopIdsByCode();
 
-                // 第二步：使用確認後的正確 ID 請求實時 ETA 數據
+                // 2. 請求該 ID 的實時 ETA 數據
                 const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${resolvedOriginId}`);
                 const etas = etaData.data || [];
 
-                let displayEtas = etas.filter(item => item.stop === resolvedOriginId);
+                // 3. 嚴格過濾：確保該車次的 stop 確實是起點 ID
+                const originEtas = etas.filter(item => item.stop === resolvedOriginId);
 
-                if (displayEtas.length === 0 && etas.length > 0) {
-                    displayEtas = etas;
+                // 4. 嚴格過濾：透過 route-stop 驗證該路線是否確實經起點（排除未經該站的假資料）
+                const validEtas = [];
+                const routeCache = {};
+
+                for (const bus of originEtas) {
+                    const cacheKey = `${bus.route}-${bus.bound}-${bus.service_type}`;
+                    let stops = routeCache[cacheKey];
+
+                    if (!stops) {
+                        try {
+                            const stopRes = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${bus.route}/${bus.bound}/${bus.service_type}`);
+                            stops = stopRes.data || [];
+                            routeCache[cacheKey] = stops;
+                        } catch(e) {
+                            stops = [];
+                        }
+                    }
+
+                    const hasOrigin = stops.some(s => s.stop === resolvedOriginId);
+                    if (hasOrigin) {
+                        validEtas.push(bus);
+                    }
                 }
 
-                renderBuses(displayEtas);
+                renderBuses(validEtas);
                 statusText.innerText = "已連線";
                 statusDot.style.backgroundColor = "#4cd964";
 
@@ -393,11 +439,10 @@
                 statusDot.style.backgroundColor = "#f39c12";
                 banner.style.display = "block";
 
-                // 保底直達班次
                 renderBuses([
-                    { route: "14", dest_tc: "中秀茂坪", eta: new Date(Date.now() + 3 * 60000).toISOString(), psg_cap: "1", rmk_tc: "預设保底資料" },
-                    { route: "15", dest_tc: "藍田 (平田)", eta: new Date(Date.now() + 7 * 60000).toISOString(), psg_cap: "2", rmk_tc: "預设保底資料" },
-                    { route: "74X", dest_tc: "大埔中心", eta: new Date(Date.now() + 12 * 60000).toISOString(), psg_cap: "1", rmk_tc: "預设保底資料" }
+                    { route: "14", dest_tc: "中秀茂坪", eta: new Date(Date.now() + 3 * 60000).toISOString(), psg_cap: "1", rmk_tc: "保底模式示範資料" },
+                    { route: "15", dest_tc: "藍田 (平田)", eta: new Date(Date.now() + 7 * 60000).toISOString(), psg_cap: "2", rmk_tc: "保底模式示範資料" },
+                    { route: "74X", dest_tc: "大埔中心", eta: new Date(Date.now() + 12 * 60000).toISOString(), psg_cap: "1", rmk_tc: "保底模式示範資料" }
                 ]);
             }
         }
@@ -405,7 +450,7 @@
         function renderBuses(etas) {
             const container = document.getElementById('busListContainer');
             if (!etas || etas.length === 0) {
-                container.innerHTML = `<div class="empty-state">現時由 啟業邨 (KT314) 暫無即時班次。</div>`;
+                container.innerHTML = `<div class="empty-state">現時由 啟業邨 (${ORIGIN_CODE}) 暫無同時符合序列的即時班次。</div>`;
                 return;
             }
 
@@ -442,7 +487,7 @@
                             <div class="route-no">${route}</div>
                             <div class="route-details">
                                 <div class="dest-name">往 ${dest}</div>
-                                <div class="stop-detail">上車站: 啟業邨 (KT314) [ID: ${resolvedOriginId.substring(0,6)}...]</div>
+                                <div class="stop-detail">上車站: 啟業邨 (${ORIGIN_CODE})</div>
                                 <div class="meta-tags">
                                     <span class="fare-tag">九巴實時班次</span>
                                     ${capacity ? `<span class="crowd-tag">${capacity}</span>` : ''}
