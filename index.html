@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMB Real-time Assistant</title>
+    <style>
+        :root {
+            --kmb-red: #e1251b;
+            --bg-color: #f4f5f7;
+            --card-bg: #ffffff;
+            --text-main: #222222;
+            --text-sub: #666666;
+            --border-color: #e5e5e5;
+            --blue-time: #0066cc;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 頂部導航列 */
+        .header {
+            background-color: var(--kmb-red);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .header-status {
+            font-size: 13px;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4cd964;
+        }
+
+        .refresh-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* 核心設定面板 */
+        .control-panel {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .station-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .station-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .badge {
+            background-color: #2c3e50;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .badge.dest {
+            background-color: #c0392b;
+        }
+
+        .station-box {
+            flex: 1;
+            background: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-btn {
+            background: none;
+            border: 1px dashed #b0b0b0;
+            color: #666;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .action-bar {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .query-btn {
+            background-color: var(--kmb-red);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* 班次列表 */
+        .bus-list {
+            padding: 10px 16px;
+        }
+
+        .bus-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .bus-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .route-no {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+            line-height: 1;
+            min-width: 60px;
+        }
+
+        .route-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .dest-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .stop-detail {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .meta-tags {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+            font-size: 12px;
+        }
+
+        .fare-tag {
+            color: #e67e22;
+            font-weight: 600;
+        }
+
+        .crowd-tag {
+            color: #27ae60;
+        }
+
+        /* 右側時間顯示 */
+        .time-box {
+            text-align: right;
+            min-width: 75px;
+        }
+
+        .time-mins {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--blue-time);
+            line-height: 1.1;
+        }
+
+        .time-clock {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span>實時到站預報</span>
+        <div class="header-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">已連線</span>
+            <button class="refresh-btn" onclick="loadBusData()">🔄</button>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <!-- 起點 -->
+        <div class="station-row">
+            <div class="badge">起點</div>
+            <div class="station-box">
+                <span>啟業邨 (KT314)</span>
+            </div>
+        </div>
+        <!-- 終點 -->
+        <div class="station-row">
+            <div class="badge dest">終點</div>
+            <div class="station-box">
+                <span>觀塘道休憩處 (KT331)</span>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="query-btn" onclick="loadBusData()">查詢合適巴士</button>
+        </div>
+    </div>
+
+    <div class="bus-list" id="busListContainer">
+        <div class="empty-state">正在從九巴 API 獲取實時數據...</div>
+    </div>
+
+    <script>
+        // 鎖定官方站點 ID
+        const ORIGIN_STOP = { id: "003294", code: "KT314", name: "啟業邨" };
+        const DEST_STOP = { id: "001476", code: "KT331", name: "觀塘道休憩處" };
+
+        async function fetchWithFallback(url) {
+            try {
+                const res = await fetch(url);
+                if (res.ok) return await res.json();
+            } catch (e) {}
+            // 備用代理伺服器防 CORS 阻擋
+            try {
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+                const res = await fetch(proxyUrl);
+                if (res.ok) return await res.json();
+            } catch (e) {}
+            throw new Error("Load failed");
+        }
+
+        async function loadBusData() {
+            const container = document.getElementById('busListContainer');
+            const statusText = document.getElementById('statusText');
+            const statusDot = document.getElementById('statusDot');
+            
+            container.innerHTML = `<div class="empty-state">正在更新實時資料...</div>`;
+            statusText.innerText = "更新中...";
+            statusDot.style.backgroundColor = "#f39c12";
+
+            try {
+                // 1. 取得起點實時 ETA
+                const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${ORIGIN_STOP.id}`);
+                const etas = etaData.data || [];
+
+                // 2. 過濾資料：只保留會途經終點或方向吻合的路線班次
+                // 為了確保精確，我們比對路線與 seq 序列
+                const validEtas = [];
+                
+                for (const item of etas) {
+                    // 過濾非指定站點
+                    if (item.stop !== ORIGIN_STOP.id) continue;
+                    
+                    // 檢查該路線是否確實前往終點方向
+                    try {
+                        const routeStopRes = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/route-stop/${item.route}/${item.bound}/${item.service_type}`);
+                        const stops = routeStopRes.data || [];
+                        
+                        const originIndex = stops.findIndex(s => s.stop === ORIGIN_STOP.id);
+                        const destIndex = stops.findIndex(s => s.stop === DEST_STOP.id);
+                        
+                        // 確保起點在終點之前
+                        if (originIndex !== -1 && destIndex !== -1 && originIndex < destIndex) {
+                            validEtas.push(item);
+                        }
+                    } catch (e) {
+                        // 若無法校驗路線則暫時放行同方向直達車
+                        if (item.dir === 'I' || item.bound === 'I') validEtas.push(item);
+                    }
+                }
+
+                renderBuses(validEtas);
+                statusText.innerText = "已連線";
+                statusDot.style.backgroundColor = "#4cd964";
+
+            } catch (err) {
+                console.error(err);
+                statusText.innerText = "連線異常";
+                statusDot.style.backgroundColor = "#e74c3c";
+                container.innerHTML = `<div class="empty-state">無法連線至九巴伺服器，請點擊右上角按鈕重新整理。</div>`;
+            }
+        }
+
+        function renderBuses(etas) {
+            const container = document.getElementById('busListContainer');
+            if (!etas || etas.length === 0) {
+                container.innerHTML = `<div class="empty-state">現時由 ${ORIGIN_STOP.name} 前往 ${DEST_STOP.name} 暫無即時班次。</div>`;
+                return;
+            }
+
+            // 嚴格將每一班車拆分為獨立一行
+            let html = '';
+            etas.forEach(bus => {
+                const route = bus.route;
+                const dest = bus.dest_en ? bus.dest_tc : (bus.dest_tc || "指定方向");
+                const etaTimeStr = bus.eta; // 格式: 2026-06-01T14:25:00+08:00
+                
+                let minsText = "即將到達";
+                let clockTime = "--:--";
+
+                if (etaTimeStr) {
+                    const etaDate = new Date(etaTimeStr);
+                    const now = new Date();
+                    const diffMins = Math.round((etaDate - now) / 60000);
+                    
+                    if (diffMins <= 0) {
+                        minsText = "即將";
+                    } else {
+                        minsText = `${diffMins} <span style="font-size:14px; font-weight:normal;">分鐘</span>`;
+                    }
+
+                    // 24小時制時間格式化
+                    const hours = String(etaDate.getHours()).padStart(2, '0');
+                    const mins = String(etaDate.getMinutes()).padStart(2, '0');
+                    clockTime = `${hours}:${mins}`;
+                }
+
+                // 官方擁擠度與車費對應（若 API 有回傳則顯示）
+                const capacity = bus.psg_cap ? (bus.psg_cap === '1' ? '座位充足' : '擁擠') : '';
+                const rmk = bus.rmk_tc ? `• ${bus.rmk_tc}` : '';
+
+                html += `
+                    <div class="bus-card">
+                        <div class="bus-info">
+                            <div class="route-no">${route}</div>
+                            <div class="route-details">
+                                <div class="dest-name">往 ${dest}</div>
+                                <div class="stop-detail">上車站: ${ORIGIN_STOP.name} (${ORIGIN_STOP.code})</div>
+                                <div class="meta-tags">
+                                    <span class="fare-tag">九巴實時班次</span>
+                                    ${capacity ? `<span class="crowd-tag">${capacity}</span>` : ''}
+                                    <span style="color:#888;">${rmk}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="time-box">
+                            <div class="time-mins">${minsText}</div>
+                            <div class="time-clock">${clockTime}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // 頁面載入後自動獲取一次，並每 30 秒自動刷新
+        window.onload = () => {
+            loadBusData();
+            setInterval(loadBusData, 30000);
+        };
+    </script>
+</body>
+</html>
