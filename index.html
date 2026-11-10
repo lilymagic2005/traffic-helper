@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMB Smart Assistant - 即將 20px 調整版 v2.72</title>
+    <title>KMB Smart Assistant - 版面與按鈕完美修正版 v2.77</title>
     <style>
         :root {
             --kmb-red: #ff3b30;
@@ -15,7 +15,7 @@
             --border-color: #e2e8f0;
             --blue-time: #0051a8;
             --badge-bg: #edf2f7;
-            --radius: 14px;
+            --radius: 12px;
         }
 
         body {
@@ -30,11 +30,11 @@
         .header {
             background: linear-gradient(135deg, #ff3b30, #ff6b6b);
             color: white;
-            padding: 10px 16px;
+            padding: 8px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             box-shadow: 0 2px 8px rgba(255, 59, 48, 0.15);
         }
@@ -46,13 +46,13 @@
             align-items: center;
             gap: 6px;
             background: rgba(255, 255, 255, 0.2);
-            padding: 3px 8px;
+            padding: 2px 8px;
             border-radius: 20px;
         }
 
         .status-dot {
-            width: 7px;
-            height: 7px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background-color: #34c759;
         }
@@ -62,15 +62,15 @@
             border: none;
             color: white;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .tabs-container {
             display: flex;
             background: #ffffff;
-            margin: 10px 16px 0 16px;
-            padding: 3px;
-            border-radius: 12px;
+            margin: 8px 16px 0 16px;
+            padding: 2px;
+            border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.03);
             border: 1px solid var(--border-color);
             max-width: 600px;
@@ -80,27 +80,27 @@
 
         .tab-btn {
             flex: 1;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
             background: none;
             border: none;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-sub);
             cursor: pointer;
-            border-radius: 9px;
+            border-radius: 8px;
             transition: all 0.2s ease;
         }
 
         .tab-btn.active {
             background: var(--kmb-red);
             color: white;
-            box-shadow: 0 4px 10px rgba(255, 59, 48, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.25);
         }
 
         .tab-content {
             display: none;
-            padding: 12px 16px;
+            padding: 8px 16px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -113,52 +113,89 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
-            padding: 12px 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
 
-        .capsule-group {
-            display: flex;
-            flex-wrap: wrap;
+        /* 3 Columns 網格佈局，加入 box-sizing 避免出界 */
+        .stop-manage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 6px;
-            margin-top: 4px;
+            margin-top: 6px;
             margin-bottom: 6px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
-        .stop-capsule {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+        @media (max-width: 768px) {
+            .stop-manage-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 480px) {
+            .stop-manage-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stop-manage-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background: #fafbfc;
             border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: 8px;
+            font-size: 11px;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        .stop-info-area {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 3px;
+            font-weight: 700;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
         }
 
-        .stop-capsule.origin.enabled {
+        .role-btn-group {
+            display: flex;
+            gap: 3px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .role-btn {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            border: 1px solid #cbd5e1;
+            background: #f1f3f5;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .role-btn.origin.active {
             background: #e6f4ea;
             border-color: #34a853;
             color: #137333;
         }
 
-        .stop-capsule.dest.enabled {
+        .role-btn.dest.active {
             background: #fff0f0;
             border-color: var(--kmb-red);
             color: var(--kmb-red);
-        }
-
-        .stop-capsule.disabled {
-            background: #f1f3f5;
-            border-color: #dee2e6;
-            color: #adb5bd;
-            opacity: 0.5;
         }
 
         .delete-stop-btn {
@@ -166,7 +203,7 @@
             border: none;
             color: #ef4444;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 12px;
             padding: 0 2px;
             font-weight: bold;
         }
@@ -174,15 +211,15 @@
         .add-row {
             display: flex;
             gap: 6px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         .add-input {
             flex: 1;
-            padding: 6px 10px;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 11px;
+            padding: 5px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 10px;
             background: #fafbfc;
             font-family: monospace;
         }
@@ -191,9 +228,9 @@
             background: var(--blue-time);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 10px;
             font-weight: 700;
             cursor: pointer;
         }
@@ -203,13 +240,34 @@
             cursor: not-allowed;
         }
 
+        .action-btns-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .table-view-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .table-view-btn:hover {
+            background: #059669;
+        }
+
         .fare-table-btn {
             background: #0ea5e9;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
@@ -229,40 +287,40 @@
         }
         .modal-content {
             background: white;
-            padding: 20px;
+            padding: 16px;
             border-radius: 12px;
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             font-weight: 800;
-            font-size: 16px;
+            font-size: 14px;
         }
         .close-modal-btn {
             background: none;
             border: none;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             color: var(--text-sub);
         }
 
         .search-group {
             display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
 
         .search-input {
             flex: 1;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13px;
             outline: none;
             background: #fafbfc;
         }
@@ -271,9 +329,9 @@
             background: var(--kmb-red);
             color: white;
             border: none;
-            padding: 0 16px;
-            border-radius: 10px;
-            font-size: 13px;
+            padding: 0 14px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: 700;
             cursor: pointer;
         }
@@ -281,8 +339,8 @@
         .side-by-side-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         @media (max-width: 768px) {
@@ -295,13 +353,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
-            padding-bottom: 6px;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
             border-bottom: 2px dashed var(--border-color);
         }
 
         .route-dest-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-main);
         }
@@ -309,10 +367,10 @@
         .service-type-badge {
             background: var(--badge-bg);
             color: var(--text-main);
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 5px;
         }
 
         .service-type-badge.primary {
@@ -321,22 +379,22 @@
         }
 
         .minimal-table-container {
-            max-height: 380px;
+            max-height: 320px;
             overflow-y: auto;
         }
 
         .minimal-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         .minimal-table th {
             text-align: left;
             color: var(--text-sub);
             font-weight: 700;
-            padding: 6px 4px;
-            font-size: 11px;
+            padding: 4px;
+            font-size: 10px;
             border-bottom: 2px solid var(--border-color);
             background: #fff;
             position: sticky;
@@ -344,13 +402,13 @@
         }
 
         .minimal-table td {
-            padding: 8px 4px;
+            padding: 6px 4px;
             border-bottom: 1px solid #f7f9fc;
             color: var(--text-main);
         }
 
         .seq-col {
-            width: 28px;
+            width: 24px;
             color: var(--text-sub);
             font-weight: 700;
             text-align: center;
@@ -365,16 +423,16 @@
 
         .uuid-text {
             font-family: monospace;
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-sub);
         }
 
         .copy-btn {
             background: #f1f3f5;
             border: none;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
             color: #495057;
             cursor: pointer;
@@ -389,14 +447,14 @@
         .bus-card {
             background: #ffffff;
             border-radius: var(--radius);
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border-color);
-            border-left: 6px solid var(--kmb-red);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            border-left: 5px solid var(--kmb-red);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
@@ -405,11 +463,11 @@
         .route-no-wrapper {
             position: relative;
             display: inline-block;
-            margin-right: 16px;
+            margin-right: 12px;
         }
 
         .route-no {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 400;
             line-height: 1;
             color: var(--text-main);
@@ -417,51 +475,50 @@
 
         .route-corner-badge {
             position: absolute;
-            top: -6px;
-            right: -10px;
+            top: -5px;
+            right: -8px;
             background: #e2e8f0;
             color: #475569;
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 700;
-            padding: 1px 4px;
-            border-radius: 4px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            padding: 1px 3px;
+            border-radius: 3px;
         }
 
         .route-header-line {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
         .route-direction {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 400;
             color: var(--text-main);
         }
 
         .meta-tags {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             align-items: center;
         }
 
         .fare-tag {
             color: #d97706;
             background: #fef3c7;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 500;
-            padding: 1px 6px;
+            padding: 1px 5px;
             border-radius: 4px;
         }
 
         .crowd-tag {
             color: #059669;
             background: #d1fae5;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 500;
-            padding: 1px 6px;
+            padding: 1px 5px;
             border-radius: 4px;
         }
 
@@ -471,9 +528,9 @@
         }
 
         .route-pair-info {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-sub);
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         .time-box {
@@ -488,43 +545,43 @@
         }
 
         .time-digit {
-            font-size: 20px; /* 依照需求調整為 20px */
+            font-size: 20px;
             font-weight: 400;
             color: var(--blue-time);
             line-height: 1;
         }
 
         .time-unit {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 400;
             color: #64748b;
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 20px;
             color: var(--text-sub);
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .api-log-box {
             background: #1a202c;
             color: #48bb78;
             font-family: monospace;
-            font-size: 11px;
-            padding: 8px;
-            border-radius: 8px;
-            max-height: 80px;
+            font-size: 10px;
+            padding: 6px;
+            border-radius: 6px;
+            max-height: 60px;
             overflow-y: auto;
-            margin-top: 6px;
+            margin-top: 4px;
             white-space: pre-wrap;
             word-break: break-all;
         }
 
         .app-version {
             text-align: center;
-            padding: 10px;
-            font-size: 11px;
+            padding: 8px;
+            font-size: 10px;
             color: var(--text-sub);
             font-weight: 600;
         }
@@ -548,27 +605,22 @@
 
     <!-- TAB 1: 實時預報 -->
     <div id="etaTab" class="tab-content active">
-        <div class="card" style="padding: 10px 14px;">
-            <div style="font-size: 12px; color: var(--text-main); margin-bottom: 6px; font-weight: 700; display:flex; justify-content:space-between; align-items:center;">
-                <span>⚙️ 站點狀態設定</span>
-                <div style="display: flex; gap: 6px; align-items: center;">
+        <div class="card" style="padding: 8px 12px;">
+            <div style="font-size: 11px; color: var(--text-main); margin-bottom: 4px; font-weight: 700; display:flex; justify-content:flex-end; align-items:center;">
+                <div class="action-btns-group">
+                    <button class="table-view-btn" onclick="openDefaultStopsModal()">📋 預設站名表</button>
                     <button class="fare-table-btn" onclick="openFareModal()">📊 票價表</button>
-                    <span style="font-size:11px; color:#007aff; cursor:pointer;" onclick="loadBusData()">🔄 重新整理</span>
+                    <span style="font-size:10px; color:#007aff; cursor:pointer;" onclick="loadBusData()">🔄 重新整理</span>
                 </div>
             </div>
             
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-bottom: 2px;">起點</div>
-            <div class="capsule-group" id="originCapsulesContainer"></div>
-            <div class="add-row">
-                <input type="text" id="newOriginInput" class="add-input" placeholder="輸入其他起點 UUID (足夠 16 碼啟用按鈕)..." oninput="checkInputState('origin')">
-                <button id="addOriginBtn" class="add-btn" onclick="addCustomStop('origin')" disabled>+ 新增起點</button>
-            </div>
+            <!-- 3 Columns 緊湊網格站點清單 -->
+            <div class="stop-manage-grid" id="stopManagerList"></div>
 
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin: 8px 0 2px 0;">終點</div>
-            <div class="capsule-group" id="destCapsulesContainer"></div>
+            <!-- 自定義新增站點 -->
             <div class="add-row">
-                <input type="text" id="newDestInput" class="add-input" placeholder="輸入其他終點 UUID (足夠 16 碼啟用按鈕)..." oninput="checkInputState('dest')">
-                <button id="addDestBtn" class="add-btn" onclick="addCustomStop('dest')" disabled>+ 新增終點</button>
+                <input type="text" id="newStopInput" class="add-input" placeholder="輸入 16 碼 UUID 新增站點..." oninput="checkInputState()">
+                <button id="addStopBtn" class="add-btn" onclick="addCustomStop()" disabled>+ 新增站點</button>
             </div>
         </div>
 
@@ -580,13 +632,13 @@
     <!-- TAB 2: 路線站序查詢 -->
     <div id="routeStopTab" class="tab-content">
         <div class="card">
-            <div style="font-size: 13px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">🚌 輸入路線號碼查詢站序</div>
+            <div style="font-size: 12px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">🚌 輸入路線號碼查詢站序</div>
             <div class="search-group">
                 <input type="text" id="routeSearchInput" class="search-input" placeholder="例如: 3D, 101, 1A" onkeydown="if(event.key==='Enter') searchRouteStops()">
                 <button class="search-btn" onclick="searchRouteStops()">查詢</button>
             </div>
 
-            <div style="font-size: 11px; font-weight: 700; color: var(--text-sub); margin-top: 4px; display:flex; justify-content:space-between;">
+            <div style="font-size: 10px; font-weight: 700; color: var(--text-sub); margin-top: 4px; display:flex; justify-content:space-between;">
                 <span>API 狀態記錄</span>
                 <span style="color:#007aff; cursor:pointer;" onclick="clearRouteLogs()">清除</span>
             </div>
@@ -605,7 +657,7 @@
                 <span>📊 路線車費表 (Fare Information)</span>
                 <button class="close-modal-btn" onclick="closeFareModal()">×</button>
             </div>
-            <div style="max-height: 250px; overflow-y: auto;">
+            <div style="max-height: 220px; overflow-y: auto;">
                 <table class="minimal-table">
                     <thead>
                         <tr>
@@ -621,8 +673,31 @@
         </div>
     </div>
 
+    <!-- Default Stops Table Modal 彈出視窗 -->
+    <div id="defaultStopsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>📋 預設站名與 UUID 對照表</span>
+                <button class="close-modal-btn" onclick="closeDefaultStopsModal()">×</button>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto;">
+                <table class="minimal-table">
+                    <thead>
+                        <tr>
+                            <th>站名</th>
+                            <th>標籤</th>
+                            <th style="text-align: right;">UUID / 複製</th>
+                        </tr>
+                    </thead>
+                    <tbody id="defaultStopsTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="app-version">
-        KMB Cute & Clean UI | v2.72
+        KMB Cute & Clean UI | v2.77
     </div>
 
     <script>
@@ -632,20 +707,22 @@
         let stopCodeMap = {
             "23AF5995FEBCA8E6": "啟業邨 (KT314)",
             "D9B53E4B3A192940": "啟業邨 (KT316)",
+            "F60097D67F33DC0C": "啟業邨 (KT313)",
             "4D3C6D74F6AE8C7D": "觀塘道休憩處 (KT331)",
             "DF942A6B97EABDC4": "觀塘道休憩處 (KT332)",
-            "3E73B73B12E25DCF": "觀塘道休憩處 (KT330)"
+            "3E73B73B12E25DCF": "觀塘道休憩處 (KT330)",
+            "9E54416DFC0C7B68": "啟業邨 (KT682)"
         };
 
-        let originsList = [
-            { id: "23AF5995FEBCA8E6", enabled: true, isCustom: false },
-            { id: "D9B53E4B3A192940", enabled: false, isCustom: false }
-        ];
-
-        let destsList = [
-            { id: "4D3C6D74F6AE8C7D", enabled: true, isCustom: false },
-            { id: "DF942A6B97EABDC4", enabled: true, isCustom: false },
-            { id: "3E73B73B12E25DCF", enabled: true, isCustom: false }
+        // 全域站點收藏夾 (Stop Pool)
+        let globalStops = [
+            { id: "23AF5995FEBCA8E6", isOrigin: true, isDest: false, isHome: true, isCustom: false },
+            { id: "D9B53E4B3A192940", isOrigin: false, isDest: false, isHome: true, isCustom: false },
+            { id: "F60097D67F33DC0C", isOrigin: false, isDest: false, isHome: true, isCustom: false },
+            { id: "4D3C6D74F6AE8C7D", isOrigin: false, isDest: true, isHome: false, isCustom: false },
+            { id: "DF942A6B97EABDC4", isOrigin: false, isDest: true, isHome: false, isCustom: false },
+            { id: "3E73B73B12E25DCF", isOrigin: false, isDest: true, isHome: false, isCustom: false },
+            { id: "9E54416DFC0C7B68", isOrigin: false, isDest: true, isHome: false, isCustom: false }
         ];
 
         const fareDatabase = [
@@ -654,7 +731,9 @@
             { route: "17", dir: "Inbound (I)", fare: "$6.7" },
             { route: "101", dir: "Inbound (I)", fare: "$7.7" },
             { route: "11B", dir: "Inbound (I)", fare: "$5.8" },
-            { route: "11C", dir: "Outbound (O)", fare: "$6.7" }
+            { route: "11C", dir: "Outbound (O)", fare: "$6.7" },
+            { route: "671", dir: "Outbound (O)", fare: "$14.7" },
+            { route: "89C", dir: "Outbound (O)", fare: "$7.4" }
         ];
 
         function openFareModal() {
@@ -677,11 +756,36 @@
             document.getElementById('fareModal').style.display = 'none';
         }
 
-        function checkInputState(type) {
-            const inputId = type === 'origin' ? 'newOriginInput' : 'newDestInput';
-            const btnId = type === 'origin' ? 'addOriginBtn' : 'addDestBtn';
-            const val = document.getElementById(inputId).value.trim();
-            document.getElementById(btnId).disabled = (val.length !== 16);
+        async function openDefaultStopsModal() {
+            const tbody = document.getElementById('defaultStopsTableBody');
+            let html = '';
+            for (const stop of globalStops) {
+                const name = await getStopDisplayName(stop.id);
+                const tag = stop.isHome ? '🏠 Home' : '一般站點';
+                html += `
+                    <tr>
+                        <td><b>${name}</b></td>
+                        <td>${tag}</td>
+                        <td style="text-align: right;">
+                            <div class="uuid-cell">
+                                <span class="uuid-text">${stop.id}</span>
+                                <button class="copy-btn" onclick="copyToClipboard('${stop.id}', this)">📋</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+            tbody.innerHTML = html;
+            document.getElementById('defaultStopsModal').style.display = 'flex';
+        }
+
+        function closeDefaultStopsModal() {
+            document.getElementById('defaultStopsModal').style.display = 'none';
+        }
+
+        function checkInputState() {
+            const val = document.getElementById('newStopInput').value.trim();
+            document.getElementById('addStopBtn').disabled = (val.length !== 16);
         }
 
         async function getStopDisplayName(uuid) {
@@ -705,76 +809,66 @@
             return uuid.substring(0, 8);
         }
 
-        async function renderCapsules() {
-            const originContainer = document.getElementById('originCapsulesContainer');
-            const destContainer = document.getElementById('destCapsulesContainer');
+        async function renderStopManager() {
+            const container = document.getElementById('stopManagerList');
+            let html = '';
 
-            let originHtml = '';
-            for (let i = 0; i < originsList.length; i++) {
-                const item = originsList[i];
-                const displayName = await getStopDisplayName(item.id);
-                const deleteBtn = item.isCustom ? `<button class="delete-stop-btn" onclick="removeStop('origin', ${i}); event.stopPropagation();">×</button>` : '';
-                originHtml += `
-                    <div class="stop-capsule origin ${item.enabled ? 'enabled' : 'disabled'}" onclick="toggleStop('origin', ${i})">
-                        <span>${displayName}</span>
-                        <span style="font-family:monospace; font-size:9px; opacity:0.7;">(${item.id.substring(0,4)})</span>
-                        ${deleteBtn}
+            for (let i = 0; i < globalStops.length; i++) {
+                const stop = globalStops[i];
+                const displayName = await getStopDisplayName(stop.id);
+                const homeIcon = stop.isHome ? `<span title="常用住家站" style="margin-left:3px; font-size:11px;">🏠</span>` : '';
+                
+                // 預設站點一律不顯示括號代碼，只有自定義新增的站點才顯示簡碼
+                let codeDisplay = '';
+                if (stop.isCustom) {
+                    codeDisplay = `<span style="font-family:monospace; font-size:9px; color:#718096; margin-left:2px;">(${stop.id.substring(0,4)})</span>`;
+                }
+
+                html += `
+                    <div class="stop-manage-row">
+                        <div class="stop-info-area">
+                            <span>${displayName}</span>
+                            ${homeIcon}
+                            ${codeDisplay}
+                        </div>
+                        <div class="role-btn-group">
+                            <button class="role-btn origin ${stop.isOrigin ? 'active' : ''}" onclick="toggleStopRole(${i}, 'origin')">起點</button>
+                            <button class="role-btn dest ${stop.isDest ? 'active' : ''}" onclick="toggleStopRole(${i}, 'dest')">終點</button>
+                            ${stop.isCustom ? `<button class="delete-stop-btn" onclick="removeStop(${i})">×</button>` : ''}
+                        </div>
                     </div>
                 `;
             }
-            originContainer.innerHTML = originHtml;
-
-            let destHtml = '';
-            for (let i = 0; i < destsList.length; i++) {
-                const item = destsList[i];
-                const displayName = await getStopDisplayName(item.id);
-                const deleteBtn = item.isCustom ? `<button class="delete-stop-btn" onclick="removeStop('dest', ${i}); event.stopPropagation();">×</button>` : '';
-                destHtml += `
-                    <div class="stop-capsule dest ${item.enabled ? 'enabled' : 'disabled'}" onclick="toggleStop('dest', ${i})">
-                        <span>${displayName}</span>
-                        <span style="font-family:monospace; font-size:9px; opacity:0.7;">(${item.id.substring(0,4)})</span>
-                        ${deleteBtn}
-                    </div>
-                `;
-            }
-            destContainer.innerHTML = destHtml;
+            container.innerHTML = html;
         }
 
-        async function addCustomStop(type) {
-            const inputId = type === 'origin' ? 'newOriginInput' : 'newDestInput';
-            const uuid = document.getElementById(inputId).value.trim();
+        function toggleStopRole(index, role) {
+            if (role === 'origin') {
+                globalStops[index].isOrigin = !globalStops[index].isOrigin;
+            } else {
+                globalStops[index].isDest = !globalStops[index].isDest;
+            }
+            renderStopManager();
+            loadBusData();
+        }
+
+        async function addCustomStop() {
+            const input = document.getElementById('newStopInput');
+            const uuid = input.value.trim();
             if (uuid.length !== 16) {
                 alert("請輸入有效的 16 碼 UUID！");
                 return;
             }
-            if (type === 'origin') {
-                originsList.push({ id: uuid, enabled: true, isCustom: true });
-            } else {
-                destsList.push({ id: uuid, enabled: true, isCustom: true });
-            }
-            document.getElementById(inputId).value = "";
-            checkInputState(type);
-            await renderCapsules();
+            globalStops.push({ id: uuid, isOrigin: true, isDest: false, isHome: false, isCustom: true });
+            input.value = "";
+            checkInputState();
+            await renderStopManager();
             loadBusData();
         }
 
-        function removeStop(type, index) {
-            if (type === 'origin') {
-                originsList.splice(index, 1);
-            } else {
-                destsList.splice(index, 1);
-            }
-            renderCapsules();
-            loadBusData();
-        }
-
-        function toggleStop(type, index) {
-            if (type === 'origin') {
-                originsList[index].enabled = !originsList[index].enabled;
-            } else {
-                destsList[index].enabled = !destsList[index].enabled;
-            }
-            renderCapsules();
+        function removeStop(index) {
+            globalStops.splice(index, 1);
+            renderStopManager();
             loadBusData();
         }
 
@@ -788,13 +882,9 @@
         function copyToClipboard(text, btnElement) {
             navigator.clipboard.writeText(text).then(() => {
                 const originalText = btnElement.innerText;
-                btnElement.innerText = "✅ 已複製";
-                btnElement.style.background = "#34c759";
-                btnElement.style.color = "white";
+                btnElement.innerText = "✅";
                 setTimeout(() => {
                     btnElement.innerText = originalText;
-                    btnElement.style.background = "#f1f3f5";
-                    btnElement.style.color = "#495057";
                 }, 1500);
             });
         }
@@ -842,6 +932,8 @@
             if (r === "101" && (d === "I" || d === "INBOUND")) return "$7.7";
             if (r === "11B" && (d === "I" || d === "INBOUND")) return "$5.8";
             if (r === "11C" && (d === "O" || d === "OUTBOUND")) return "$6.7";
+            if (r === "671" && (d === "O" || d === "OUTBOUND")) return "$14.7";
+            if (r === "89C" && (d === "O" || d === "OUTBOUND")) return "$7.4";
             return null;
         }
 
@@ -918,7 +1010,7 @@
                     const isServiceOne = st === '1';
 
                     html += `
-                        <div style="margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                        <div style="margin-bottom: 6px; font-size: 12px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
                             <span>路線 ${targetRoute}</span>
                             <span class="service-type-badge ${isServiceOne ? 'primary' : ''}">服務類型: ${st}</span>
                         </div>
@@ -941,7 +1033,7 @@
         function renderSingleDirectionCard(dirInfo, defaultTitle) {
             if (!dirInfo) {
                 return `
-                    <div class="card" style="display: flex; align-items: center; justify-content: center; color: var(--text-sub); height: 160px;">
+                    <div class="card" style="display: flex; align-items: center; justify-content: center; color: var(--text-sub); height: 140px;">
                         此服務類型暫無此方向資料
                     </div>
                 `;
@@ -970,7 +1062,7 @@
                 <div class="card" style="margin-bottom: 0;">
                     <div class="route-top-row">
                         <div class="route-dest-title">往 ${destText}</div>
-                        <div style="font-size: 11px; color: var(--text-sub); font-weight: 600;">${defaultTitle} (${dirInfo.stops.length}站)</div>
+                        <div style="font-size: 10px; color: var(--text-sub); font-weight: 600;">${defaultTitle} (${dirInfo.stops.length}站)</div>
                     </div>
                     
                     <div class="minimal-table-container">
@@ -995,11 +1087,11 @@
         async function loadBusData() {
             const container = document.getElementById('busListContainer');
             
-            const activeOrigins = originsList.filter(o => o.enabled);
-            const activeDests = destsList.filter(d => d.enabled);
+            const activeOrigins = globalStops.filter(s => s.isOrigin);
+            const activeDests = globalStops.filter(s => s.isDest);
 
             if (activeOrigins.length === 0) {
-                container.innerHTML = `<div class="empty-state">請至少啟用一個起點站！</div>`;
+                container.innerHTML = `<div class="empty-state">請至少在上方將一個站點設為「起點」！</div>`;
                 return;
             }
 
@@ -1013,7 +1105,9 @@
                     const origName = await getStopDisplayName(orig.id);
                     if (etaResult.data && etaResult.data.data) {
                         etaResult.data.data.forEach(bus => {
-                            allEtas.push({ ...bus, queriedOriginId: orig.id, queriedOriginName: origName });
+                            if (bus.eta) {
+                                allEtas.push({ ...bus, queriedOriginId: orig.id, queriedOriginName: origName });
+                            }
                         });
                     }
                 }));
@@ -1075,10 +1169,10 @@
                 // 排序：確保所有「即將」到站的車次嚴格置頂在最前，之後依時間排序
                 processedEtas.sort((a, b) => {
                     const now = new Date();
-                    const diffA = a.eta ? new Date(a.eta) - now : -999999;
-                    const diffB = b.eta ? new Date(b.eta) - now : -999999;
-                    const isSoonA = !a.eta || diffA <= 0;
-                    const isSoonB = !b.eta || diffB <= 0;
+                    const diffA = new Date(a.eta) - now;
+                    const diffB = new Date(b.eta) - now;
+                    const isSoonA = diffA <= 0;
+                    const isSoonB = diffB <= 0;
 
                     if (isSoonA && !isSoonB) return -1;
                     if (!isSoonA && isSoonB) return 1;
@@ -1086,7 +1180,7 @@
                 });
 
                 if (processedEtas.length === 0) {
-                    container.innerHTML = `<div class="empty-state">目前沒有符合啟用啟訖站條件的班次。</div>`;
+                    container.innerHTML = `<div class="empty-state">目前沒有符合啟用起訖站條件的班次。</div>`;
                     return;
                 }
 
@@ -1111,8 +1205,6 @@
                         } else {
                             minsNum = diffMins;
                         }
-                    } else {
-                        isSoon = true;
                     }
 
                     let crowdText = "座位充足";
@@ -1127,7 +1219,7 @@
 
                     const pairText = `${bus.matchedOriginName} > ${bus.matchedDestName}`;
 
-                    // 「即將」設為 20px、深藍色、非粗體，且絕對不帶分鐘字眼
+                    // 「即將」設為 20px、深藍色、正常字重、絕對不帶分鐘字眼
                     let timeBoxHtml = '';
                     if (isSoon) {
                         timeBoxHtml = `
@@ -1178,7 +1270,7 @@
         }
 
         window.onload = async () => {
-            await renderCapsules();
+            await renderStopManager();
 
             fetch("https://data.etabus.gov.hk/v1/transport/kmb/route/")
                 .then(res => res.json())
