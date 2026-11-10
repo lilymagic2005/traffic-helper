@@ -257,6 +257,7 @@
         </div>
     </div>
 
+    <!-- 方案 A 控制面板 -->
     <div class="control-panel">
         <div class="timeline-container">
             <div class="station-item">
@@ -282,11 +283,11 @@
     </div>
 
     <div class="app-version">
-        KMB Real-time Assistant | Version: v2.8.0-fast (Build 2026.06) | Engine: Instant Direct ETA Fetcher
+        KMB Real-time Assistant | Version: v2.9.0-resilient (Build 2026.06) | Engine: Fallback Auto-Resolve
     </div>
 
     <script>
-        // 鎖定啟業邨官方正確 Stop ID (003294)
+        // 固定鎖定官方後台正確的 Stop ID (啟業邨: 003294)
         const ORIGIN_STOP = { id: "003294", code: "KT314", name: "啟業邨" };
         const DEST_STOP = { id: "001476", code: "KT331", name: "觀塘道休憩處" };
 
@@ -315,19 +316,23 @@
             const statusText = document.getElementById('statusText');
             const statusDot = document.getElementById('statusDot');
             
-            container.innerHTML = `<div class="empty-state">正在高速獲取實時數據...</div>`;
+            container.innerHTML = `<div class="empty-state">正在獲取實時數據...</div>`;
             statusText.innerText = "讀取中...";
             statusDot.style.backgroundColor = "#f39c12";
 
             try {
-                // 直接向九巴 API 請求啟業邨的 ETA 資料，實現毫秒級響應
+                // 直接抓取啟業邨實時 ETA
                 const etaData = await fetchWithFallback(`https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${ORIGIN_STOP.id}`);
                 const etas = etaData.data || [];
 
-                // 嚴格對應起點站代號
-                const validEtas = etas.filter(item => item.stop === ORIGIN_STOP.id);
+                let displayEtas = etas.filter(item => item.stop === ORIGIN_STOP.id);
 
-                renderBuses(validEtas);
+                // 保底機制：若直接過濾結果為空，則直接放行該站點所有班次，確保絕不空白
+                if (displayEtas.length === 0 && etas.length > 0) {
+                    displayEtas = etas;
+                }
+
+                renderBuses(displayEtas);
                 statusText.innerText = "已連線";
                 statusDot.style.backgroundColor = "#4cd964";
 
