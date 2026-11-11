@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMB Smart Assistant - 版面與按鈕完美修正版 v2.77</title>
+    <title>KMB Smart Assistant - 4個按鈕與11B修復版 v2.83</title>
     <style>
         :root {
             --kmb-red: #ff3b30;
@@ -121,7 +121,7 @@
             margin-right: auto;
         }
 
-        /* 3 Columns 網格佈局，加入 box-sizing 避免出界 */
+        /* 站點網格：支援第三行 4 個按鈕完美並排 */
         .stop-manage-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -132,12 +132,12 @@
             width: 100%;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .stop-manage-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-        @media (max-width: 480px) {
+        @media (max-width: 550px) {
             .stop-manage-grid {
                 grid-template-columns: 1fr;
             }
@@ -147,43 +147,63 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 8px;
+            padding: 5px 8px;
             background: #fafbfc;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             font-size: 11px;
             box-sizing: border-box;
             min-width: 0;
+            gap: 4px;
         }
 
         .stop-info-area {
             display: flex;
-            align-items: center;
-            gap: 3px;
+            flex-direction: column;
+            justify-content: center;
             font-weight: 700;
+            overflow: hidden;
+            flex: 1;
+            min-width: 0;
+            line-height: 1.2;
+        }
+
+        .stop-name-line {
+            display: flex;
+            align-items: center;
+            gap: 2px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            min-width: 0;
+        }
+
+        .stop-code-line {
+            font-size: 9px;
+            color: var(--text-sub);
+            font-weight: 500;
+            margin-top: 1px;
         }
 
         .role-btn-group {
             display: flex;
-            gap: 3px;
+            gap: 2px;
             align-items: center;
             flex-shrink: 0;
         }
 
+        /* 按鈕高度不變，文字 9px，寬度進一步縮短 */
         .role-btn {
-            padding: 2px 6px;
+            padding: 3px 3px;
             border-radius: 4px;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
             border: 1px solid #cbd5e1;
             background: #f1f3f5;
             color: #64748b;
             cursor: pointer;
             transition: all 0.2s;
+            min-width: 24px;
+            text-align: center;
         }
 
         .role-btn.origin.active {
@@ -203,15 +223,15 @@
             border: none;
             color: #ef4444;
             cursor: pointer;
-            font-size: 12px;
-            padding: 0 2px;
+            font-size: 11px;
+            padding: 0 1px;
             font-weight: bold;
         }
 
         .add-row {
             display: flex;
             gap: 6px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .add-input {
@@ -504,14 +524,17 @@
             align-items: center;
         }
 
+        /* 動態票價色階 */
         .fare-tag {
-            color: #d97706;
-            background: #fef3c7;
             font-size: 9px;
-            font-weight: 500;
+            font-weight: 600;
             padding: 1px 5px;
             border-radius: 4px;
         }
+        .fare-yellow-1 { color: #92400e; background: #fef3c7; }
+        .fare-yellow-2 { color: #854d0e; background: #fde68a; }
+        .fare-orange-1 { color: #9a3412; background: #fed7aa; }
+        .fare-orange-2 { color: #7c2d12; background: #fdba74; }
 
         .crowd-tag {
             color: #059669;
@@ -555,6 +578,13 @@
             font-size: 11px;
             font-weight: 400;
             color: #64748b;
+        }
+
+        .time-clock {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-top: 2px;
         }
 
         .empty-state {
@@ -697,7 +727,7 @@
     </div>
 
     <div class="app-version">
-        KMB Cute & Clean UI | v2.77
+        KMB Cute & Clean UI | v2.83
     </div>
 
     <script>
@@ -705,35 +735,45 @@
         let routeListCache = null;
 
         let stopCodeMap = {
+            "F60097D67F33DC0C": "啟業邨 (KT313)",
             "23AF5995FEBCA8E6": "啟業邨 (KT314)",
             "D9B53E4B3A192940": "啟業邨 (KT316)",
-            "F60097D67F33DC0C": "啟業邨 (KT313)",
+            "3E73B73B12E25DCF": "觀塘道休憩處 (KT330)",
             "4D3C6D74F6AE8C7D": "觀塘道休憩處 (KT331)",
             "DF942A6B97EABDC4": "觀塘道休憩處 (KT332)",
-            "3E73B73B12E25DCF": "觀塘道休憩處 (KT330)",
+            "DB42B6238F75CF3C": "啟泰苑 (KT679)",
+            "31B93EAF018D6956": "啟泰苑 (KT680)",
+            "9C884013EBA1D548": "啟業邨 (KT681)",
             "9E54416DFC0C7B68": "啟業邨 (KT682)"
         };
 
-        // 全域站點收藏夾 (Stop Pool)
+        // 預設站點清單
         let globalStops = [
+            { id: "F60097D67F33DC0C", isOrigin: true, isDest: false, isHome: true, isCustom: false },
             { id: "23AF5995FEBCA8E6", isOrigin: true, isDest: false, isHome: true, isCustom: false },
-            { id: "D9B53E4B3A192940", isOrigin: false, isDest: false, isHome: true, isCustom: false },
-            { id: "F60097D67F33DC0C", isOrigin: false, isDest: false, isHome: true, isCustom: false },
+            { id: "D9B53E4B3A192940", isOrigin: false, isDest: false, isHome: false, isCustom: false },
+            { id: "3E73B73B12E25DCF", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "4D3C6D74F6AE8C7D", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "DF942A6B97EABDC4", isOrigin: false, isDest: true, isHome: false, isCustom: false },
-            { id: "3E73B73B12E25DCF", isOrigin: false, isDest: true, isHome: false, isCustom: false },
+            // 第三行 4 個按鈕並排
+            { id: "DB42B6238F75CF3C", isOrigin: false, isDest: true, isHome: false, isCustom: false },
+            { id: "31B93EAF018D6956", isOrigin: false, isDest: true, isHome: false, isCustom: false },
+            { id: "9C884013EBA1D548", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "9E54416DFC0C7B68", isOrigin: false, isDest: true, isHome: false, isCustom: false }
         ];
 
+        // 票價表資料庫：依照 Route 排序，同 Route 則 Outbound 在前、Inbound 在後
         const fareDatabase = [
-            { route: "3D", dir: "Outbound (O)", fare: "$5.8" },
             { route: "1A", dir: "Inbound (I)", fare: "$7.9" },
-            { route: "17", dir: "Inbound (I)", fare: "$6.7" },
-            { route: "101", dir: "Inbound (I)", fare: "$7.7" },
+            { route: "3D", dir: "Outbound (O)", fare: "$5.8" },
             { route: "11B", dir: "Inbound (I)", fare: "$5.8" },
+            { route: "11B", dir: "Outbound (O)", fare: "$5.8" },
             { route: "11C", dir: "Outbound (O)", fare: "$6.7" },
-            { route: "671", dir: "Outbound (O)", fare: "$14.7" },
-            { route: "89C", dir: "Outbound (O)", fare: "$7.4" }
+            { route: "17", dir: "Inbound (I)", fare: "$6.7" },
+            { route: "89C", dir: "Outbound (O)", fare: "$7.4" },
+            { route: "89X", dir: "Outbound (O)", fare: "$7.4" },
+            { route: "101", dir: "Inbound (I)", fare: "$7.7" },
+            { route: "671", dir: "Outbound (O)", fare: "$14.7" }
         ];
 
         function openFareModal() {
@@ -815,21 +855,33 @@
 
             for (let i = 0; i < globalStops.length; i++) {
                 const stop = globalStops[i];
-                const displayName = await getStopDisplayName(stop.id);
-                const homeIcon = stop.isHome ? `<span title="常用住家站" style="margin-left:3px; font-size:11px;">🏠</span>` : '';
+                let fullName = await getStopDisplayName(stop.id);
                 
-                // 預設站點一律不顯示括號代碼，只有自定義新增的站點才顯示簡碼
-                let codeDisplay = '';
+                let cleanName = fullName;
+                let codePart = "";
+                const match = fullName.match(/(.*?)\s*\((.*?)\)$/);
+                if (match) {
+                    cleanName = match[1].trim();
+                    codePart = match[2].trim();
+                } else {
+                    codePart = stop.id.substring(0, 4);
+                }
+
+                const homeIcon = stop.isHome ? `<span title="常用住家站" style="margin-left:2px; font-size:11px; flex-shrink:0;">🏠</span>` : '';
+                
+                let customCodeDisplay = "";
                 if (stop.isCustom) {
-                    codeDisplay = `<span style="font-family:monospace; font-size:9px; color:#718096; margin-left:2px;">(${stop.id.substring(0,4)})</span>`;
+                    customCodeDisplay = ` (${stop.id.substring(0,4)})`;
                 }
 
                 html += `
                     <div class="stop-manage-row">
                         <div class="stop-info-area">
-                            <span>${displayName}</span>
-                            ${homeIcon}
-                            ${codeDisplay}
+                            <div class="stop-name-line">
+                                <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${cleanName}</span>
+                                ${homeIcon}
+                            </div>
+                            <div class="stop-code-line">${codePart}${customCodeDisplay}</div>
                         </div>
                         <div class="role-btn-group">
                             <button class="role-btn origin ${stop.isOrigin ? 'active' : ''}" onclick="toggleStopRole(${i}, 'origin')">起點</button>
@@ -930,11 +982,21 @@
             if (r === "1A" && (d === "I" || d === "INBOUND")) return "$7.9";
             if (r === "17" && (d === "I" || d === "INBOUND")) return "$6.7";
             if (r === "101" && (d === "I" || d === "INBOUND")) return "$7.7";
-            if (r === "11B" && (d === "I" || d === "INBOUND")) return "$5.8";
+            if (r === "11B") return "$5.8"; // 涵蓋 11B 所有方向
             if (r === "11C" && (d === "O" || d === "OUTBOUND")) return "$6.7";
-            if (r === "671" && (d === "O" || d === "OUTBOUND")) return "$14.7";
             if (r === "89C" && (d === "O" || d === "OUTBOUND")) return "$7.4";
+            if (r === "89X" && (d === "O" || d === "OUTBOUND")) return "$7.4";
+            if (r === "671" && (d === "O" || d === "OUTBOUND")) return "$14.7";
             return null;
+        }
+
+        function getFareClass(fareStr) {
+            if (!fareStr) return '';
+            const amount = parseFloat(fareStr.replace('$', ''));
+            if (amount < 6) return 'fare-yellow-1';
+            if (amount < 7) return 'fare-yellow-2';
+            if (amount < 8) return 'fare-orange-1';
+            return 'fare-orange-2';
         }
 
         async function searchRouteStops() {
@@ -1184,6 +1246,20 @@
                     return;
                 }
 
+                // F12 主控台輸出要求：僅包含 route, etaTimeStr, crowdclass
+                const consoleOutputData = processedEtas.map(bus => {
+                    let crowdClass = "normal";
+                    if (bus.psg_cap === '2') crowdClass = "crowded";
+                    else if (bus.psg_cap === '3') crowdClass = "full";
+
+                    return {
+                        route: bus.route,
+                        etaTimeStr: bus.eta,
+                        crowdclass: crowdClass
+                    };
+                });
+                console.log("=== KMB Bus Realtime Data (F12 Response) ===", consoleOutputData);
+
                 let html = '';
                 processedEtas.forEach(bus => {
                     const route = bus.route;
@@ -1193,9 +1269,11 @@
                     const serviceType = String(bus.service_type || '1');
                     
                     const fare = getRouteFare(route, dir);
+                    const fareClass = getFareClass(fare);
                     
                     let isSoon = false;
                     let minsNum = 0;
+                    let clockTime = "";
 
                     if (etaTimeStr) {
                         const etaDate = new Date(etaTimeStr);
@@ -1204,6 +1282,7 @@
                             isSoon = true;
                         } else {
                             minsNum = diffMins;
+                            clockTime = `${String(etaDate.getHours()).padStart(2, '0')}:${String(etaDate.getMinutes()).padStart(2, '0')}`;
                         }
                     }
 
@@ -1233,10 +1312,11 @@
                                 <span class="time-digit">${minsNum}</span>
                                 <span class="time-unit">分鐘</span>
                             </div>
+                            <div class="time-clock">${clockTime}</div>
                         `;
                     }
 
-                    const fareHtml = fare ? `<span class="fare-tag">💰 ${fare}</span>` : '';
+                    const fareHtml = fare ? `<span class="fare-tag ${fareClass}">💰 ${fare}</span>` : '';
                     const cornerBadge = (serviceType !== '1') ? `<span class="route-corner-badge">${serviceType}</span>` : '';
 
                     html += `
