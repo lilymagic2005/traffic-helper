@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMB Smart Assistant - 扁平經典路線牌版 v2.86</title>
+    <title>KMB Smart Assistant - 側邊垂直 Pills 佈局版 v2.88</title>
     <style>
         :root {
             --kmb-red: #dc2626;
@@ -118,6 +118,7 @@
             margin-right: auto;
         }
 
+        /* 站點網格：手機版與網頁版排版一致（前兩行 3 欄、第三行 4 欄） */
         .stop-manage-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -135,25 +136,6 @@
             gap: 6px;
         }
 
-        @media (max-width: 900px) {
-            .stop-manage-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .stop-manage-grid .row-4-col {
-                grid-column: span 2;
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 550px) {
-            .stop-manage-grid {
-                grid-template-columns: 1fr;
-            }
-            .stop-manage-grid .row-4-col {
-                grid-column: span 1;
-                grid-template-columns: 1fr;
-            }
-        }
-
         .stop-manage-row {
             display: flex;
             justify-content: space-between;
@@ -165,7 +147,7 @@
             font-size: 11px;
             box-sizing: border-box;
             min-width: 0;
-            gap: 4px;
+            gap: 3px;
         }
 
         .stop-info-area {
@@ -176,7 +158,7 @@
             overflow: hidden;
             flex: 1;
             min-width: 0;
-            line-height: 1.2;
+            line-height: 1.15;
         }
 
         .stop-name-line {
@@ -226,6 +208,29 @@
             background: #fff0f0;
             border-color: var(--kmb-red);
             color: var(--kmb-red);
+        }
+
+        @media (max-width: 480px) {
+            .stop-manage-grid {
+                gap: 4px;
+            }
+            .stop-manage-grid .row-4-col {
+                gap: 4px;
+            }
+            .stop-manage-row {
+                padding: 4px 3px;
+            }
+            .stop-name-line {
+                font-size: 9px;
+            }
+            .stop-code-line {
+                font-size: 8px;
+            }
+            .role-btn {
+                font-size: 7.5px;
+                padding: 2px 2px;
+                min-width: 18px;
+            }
         }
 
         .delete-stop-btn {
@@ -335,7 +340,7 @@
             padding: 16px;
             border-radius: 12px;
             width: 90%;
-            max-width: 420px;
+            max-width: 480px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
         .modal-header {
@@ -489,7 +494,7 @@
             color: white;
         }
 
-        /* 路線卡片：無左側粗色線、無多餘陰影 */
+        /* 路線卡片 */
         .bus-card {
             background: #ffffff;
             border-radius: var(--radius);
@@ -505,7 +510,14 @@
             margin-right: auto;
         }
 
-        /* 路線牌：單一紅色、無漸變、無邊框顏色、無陰影 */
+        .bus-card-left {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            flex: 1;
+        }
+
+        /* 路線牌：單一紅色無邊框 */
         .route-no-wrapper {
             position: relative;
             display: inline-flex;
@@ -519,6 +531,7 @@
             border: none;
             box-shadow: none;
             box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .route-no {
@@ -545,48 +558,10 @@
             box-shadow: none;
         }
 
-        .route-header-line {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
         .route-direction {
             font-size: 14px;
             font-weight: 600;
             color: var(--text-main);
-        }
-
-        .meta-tags {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-        }
-
-        .fare-tag {
-            font-size: 9px;
-            font-weight: 600;
-            padding: 1px 5px;
-            border-radius: 4px;
-        }
-        .fare-yellow-1 { color: #92400e; background: #fef3c7; }
-        .fare-yellow-2 { color: #854d0e; background: #fde68a; }
-        .fare-orange-1 { color: #9a3412; background: #fed7aa; }
-        .fare-orange-2 { color: #7c2d12; background: #fdba74; }
-
-        .crowd-tag {
-            color: #059669;
-            background: #d1fae5;
-            font-size: 9px;
-            font-weight: 500;
-            padding: 1px 5px;
-            border-radius: 4px;
-        }
-
-        .crowd-tag.crowded {
-            color: #dc2626;
-            background: #fee2e2;
         }
 
         .route-pair-info {
@@ -595,17 +570,60 @@
             margin-top: 3px;
         }
 
+        /* 右側群組：包含垂直排列的 Pills 以及時間區塊 */
+        .bus-card-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        /* 垂直排列的 Pills 欄：價錢 pill 在擁擠 pill 上面，寬度完全一致 */
+        .meta-pills-col {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 58px;
+        }
+
+        .fare-tag, .crowd-tag {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 3px 0;
+            border-radius: 5px;
+            line-height: 1.15;
+        }
+
+        /* 票價 Pill 顏色：under $6 黃色 / $6-$7 橙色 / $7 或以上紅色 */
+        .fare-under-6 { color: #92400e; background: #fef3c7; }
+        .fare-6-to-7 { color: #9a3412; background: #fed7aa; }
+        .fare-7-or-more { color: #991b1b; background: #fee2e2; }
+
+        .crowd-tag {
+            color: #059669;
+            background: #d1fae5;
+        }
+
+        .crowd-tag.crowded {
+            color: #dc2626;
+            background: #fee2e2;
+        }
+
         .time-box {
             text-align: right;
-            flex-shrink: 0;
-            margin-left: 10px;
+            min-width: 58px;
         }
 
         .time-mins-container {
             display: flex;
             align-items: baseline;
             justify-content: flex-end;
-            gap: 3px;
+            gap: 2px;
         }
 
         .time-digit {
@@ -727,12 +745,13 @@
                 <span>📊 路線車費表 (Fare Information)</span>
                 <button class="close-modal-btn" onclick="closeFareModal()">×</button>
             </div>
-            <div style="max-height: 220px; overflow-y: auto;">
+            <div style="max-height: 250px; overflow-y: auto;">
                 <table class="minimal-table">
                     <thead>
                         <tr>
                             <th>路線</th>
                             <th>方向</th>
+                            <th>起點</th>
                             <th style="text-align: right;">車費</th>
                         </tr>
                     </thead>
@@ -767,7 +786,7 @@
     </div>
 
     <div class="app-version">
-        KMB Clean & Flat UI | v2.86
+        KMB Clean & Flat UI | v2.88
     </div>
 
     <script>
@@ -784,7 +803,22 @@
             "DB42B6238F75CF3C": "啟泰苑 (KT679)",
             "31B93EAF018D6956": "啟泰苑 (KT680)",
             "9C884013EBA1D548": "啟業邨 (KT681)",
-            "9E54416DFC0C7B68": "啟業邨 (KT682)"
+            "9E54416DFC0C7B68": "啟業邨 (KT682)",
+            "F80145CE9BE53123": "啟泰苑 (KT678)"
+        };
+
+        let defaultCodeToIdMap = {
+            "KT313": "F60097D67F33DC0C",
+            "KT314": "23AF5995FEBCA8E6",
+            "KT316": "D9B53E4B3A192940",
+            "KT330": "3E73B73B12E25DCF",
+            "KT331": "4D3C6D74F6AE8C7D",
+            "KT332": "DF942A6B97EABDC4",
+            "KT678": "F80145CE9BE53123",
+            "KT679": "DB42B6238F75CF3C",
+            "KT680": "31B93EAF018D6956",
+            "KT681": "9C884013EBA1D548",
+            "KT682": "9E54416DFC0C7B68"
         };
 
         let globalStops = [
@@ -801,16 +835,16 @@
         ];
 
         const fareDatabase = [
-            { route: "1A", dir: "Inbound (I)", fare: "$7.9" },
-            { route: "3D", dir: "Outbound (O)", fare: "$5.8" },
-            { route: "11B", dir: "Inbound (I)", fare: "$5.8" },
-            { route: "11B", dir: "Outbound (O)", fare: "$5.8" },
-            { route: "11C", dir: "Outbound (O)", fare: "$6.7" },
-            { route: "17", dir: "Inbound (I)", fare: "$6.7" },
-            { route: "89C", dir: "Outbound (O)", fare: "$7.4" },
-            { route: "89X", dir: "Outbound (O)", fare: "$7.4" },
-            { route: "101", dir: "Inbound (I)", fare: "$7.7" },
-            { route: "671", dir: "Outbound (O)", fare: "$14.7" }
+            { route: "1A", dir: "Inbound (I)", originCode: "KT314", fare: "$7.9" },
+            { route: "3D", dir: "Inbound (I)", originCode: "KT679", fare: "$5.8" },
+            { route: "3D", dir: "Outbound (O)", originCode: "KT314", fare: "$5.8" },
+            { route: "11B", dir: "Inbound (I)", originCode: "KT314", fare: "$5.8" },
+            { route: "11B", dir: "Outbound (O)", originCode: "KT678", fare: "$5.8" },
+            { route: "11C", dir: "Outbound (O)", originCode: "KT314", fare: "$6.7" },
+            { route: "17", dir: "Inbound (I)", originCode: "KT314", fare: "$6.7" },
+            { route: "89C", dir: "Outbound (O)", originCode: "KT314", fare: "$7.4" },
+            { route: "89X", dir: "Outbound (O)", originCode: "KT314", fare: "$7.4" },
+            { route: "101", dir: "Inbound (I)", originCode: "KT314", fare: "$7.7" }
         ];
 
         function clearAllSelections() {
@@ -822,14 +856,25 @@
             loadBusData();
         }
 
+        function getOriginDisplayNameOnly(code) {
+            const uuid = defaultCodeToIdMap[code];
+            const name = uuid && stopCodeMap[uuid] ? stopCodeMap[uuid] : code;
+            if (code === "KT314" || code === "KT313") {
+                return `🏠 ${name}`;
+            }
+            return name;
+        }
+
         function openFareModal() {
             const tbody = document.getElementById('fareTableBody');
             let html = '';
             fareDatabase.forEach(item => {
+                const originName = getOriginDisplayNameOnly(item.originCode);
                 html += `
                     <tr>
                         <td><b>${item.route}</b></td>
                         <td>${item.dir}</td>
+                        <td>${originName}</td>
                         <td style="text-align: right; color: #d97706; font-weight: 700;">${item.fare}</td>
                     </tr>
                 `;
@@ -1034,28 +1079,44 @@
             return { status: 500, data: null };
         }
 
-        function getRouteFare(route, dir) {
+        function getRouteFare(route, dir, originId) {
             const r = String(route).trim().toUpperCase();
             const d = String(dir).trim().toUpperCase();
-            if (r === "3D" && (d === "O" || d === "OUTBOUND")) return "$5.8";
-            if (r === "1A" && (d === "I" || d === "INBOUND")) return "$7.9";
-            if (r === "17" && (d === "I" || d === "INBOUND")) return "$6.7";
-            if (r === "101" && (d === "I" || d === "INBOUND")) return "$7.7";
-            if (r === "11B") return "$5.8";
-            if (r === "11C" && (d === "O" || d === "OUTBOUND")) return "$6.7";
-            if (r === "89C" && (d === "O" || d === "OUTBOUND")) return "$7.4";
-            if (r === "89X" && (d === "O" || d === "OUTBOUND")) return "$7.4";
-            if (r === "671" && (d === "O" || d === "OUTBOUND")) return "$14.7";
-            return null;
+            const boundLetter = (d === "I" || d.startsWith("IN")) ? "I" : "O";
+
+            let originCode = "";
+            for (const [code, uid] of Object.entries(defaultCodeToIdMap)) {
+                if (uid === originId) {
+                    originCode = code;
+                    break;
+                }
+            }
+
+            const matched = fareDatabase.find(item => {
+                const itemRoute = item.route.toUpperCase();
+                const itemBound = item.dir.includes("(I)") ? "I" : "O";
+                if (itemRoute !== r || itemBound !== boundLetter) return false;
+                if (originCode && item.originCode !== originCode) return false;
+                return true;
+            });
+
+            if (matched) return matched.fare;
+
+            const fallback = fareDatabase.find(item => {
+                const itemRoute = item.route.toUpperCase();
+                const itemBound = item.dir.includes("(I)") ? "I" : "O";
+                return itemRoute === r && itemBound === boundLetter;
+            });
+
+            return fallback ? fallback.fare : null;
         }
 
         function getFareClass(fareStr) {
             if (!fareStr) return '';
             const amount = parseFloat(fareStr.replace('$', ''));
-            if (amount < 6) return 'fare-yellow-1';
-            if (amount < 7) return 'fare-yellow-2';
-            if (amount < 8) return 'fare-orange-1';
-            return 'fare-orange-2';
+            if (amount < 6) return 'fare-under-6';
+            if (amount < 7) return 'fare-6-to-7';
+            return 'fare-7-or-more';
         }
 
         async function searchRouteStops() {
@@ -1327,7 +1388,7 @@
                     const etaTimeStr = bus.eta;
                     const serviceType = String(bus.service_type || '1');
                     
-                    const fare = getRouteFare(route, dir);
+                    const fare = getRouteFare(route, dir, bus.queriedOriginId);
                     const fareClass = getFareClass(fare);
                     
                     let isSoon = false;
@@ -1374,29 +1435,30 @@
                         `;
                     }
 
-                    const fareHtml = fare ? `<span class="fare-tag ${fareClass}">💰 ${fare}</span>` : '';
+                    // 價錢 pill 移除了錢袋 icon，與擁擠 pill 寬度統一 (58px)，並置於擁擠 pill 上面
+                    const fareHtml = fare ? `<span class="fare-tag ${fareClass}">${fare}</span>` : '';
                     const cornerBadge = (serviceType !== '1') ? `<span class="route-corner-badge">${serviceType}</span>` : '';
 
                     html += `
                         <div class="bus-card">
-                            <div style="display: flex; align-items: center; min-width: 0;">
+                            <div class="bus-card-left">
                                 <div class="route-no-wrapper">
                                     <div class="route-no">${route}</div>
                                     ${cornerBadge}
                                 </div>
                                 <div style="min-width: 0;">
-                                    <div class="route-header-line">
-                                        <span class="route-direction">往 ${dest}</span>
-                                        <div class="meta-tags">
-                                            ${fareHtml}
-                                            <span class="crowd-tag ${crowdClass}">${crowdText}</span>
-                                        </div>
-                                    </div>
+                                    <div class="route-direction">往 ${dest}</div>
                                     <div class="route-pair-info">${pairText}</div>
                                 </div>
                             </div>
-                            <div class="time-box">
-                                ${timeBoxHtml}
+                            <div class="bus-card-right">
+                                <div class="meta-pills-col">
+                                    ${fareHtml}
+                                    <span class="crowd-tag ${crowdClass}">${crowdText}</span>
+                                </div>
+                                <div class="time-box">
+                                    ${timeBoxHtml}
+                                </div>
                             </div>
                         </div>
                     `;
