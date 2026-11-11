@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KMB Smart Assistant - 4個按鈕與11B修復版 v2.83</title>
+    <title>KMB Smart Assistant - 扁平經典路線牌版 v2.86</title>
     <style>
         :root {
-            --kmb-red: #ff3b30;
-            --kmb-red-light: #fff5f5;
+            --kmb-red: #dc2626;
             --bg-color: #f7f9fc;
             --card-bg: #ffffff;
-            --text-main: #2d3748;
-            --text-sub: #718096;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
             --border-color: #e2e8f0;
             --blue-time: #0051a8;
             --badge-bg: #edf2f7;
@@ -28,7 +27,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #ff3b30, #ff6b6b);
+            background: #dc2626;
             color: white;
             padding: 8px 16px;
             display: flex;
@@ -36,7 +35,6 @@
             align-items: center;
             font-size: 14px;
             font-weight: 700;
-            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.15);
         }
 
         .header-status {
@@ -95,7 +93,6 @@
         .tab-btn.active {
             background: var(--kmb-red);
             color: white;
-            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.25);
         }
 
         .tab-content {
@@ -121,7 +118,6 @@
             margin-right: auto;
         }
 
-        /* 站點網格：支援第三行 4 個按鈕完美並排 */
         .stop-manage-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -132,13 +128,28 @@
             width: 100%;
         }
 
+        .stop-manage-grid .row-4-col {
+            grid-column: span 3;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
         @media (max-width: 900px) {
             .stop-manage-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .stop-manage-grid .row-4-col {
+                grid-column: span 2;
                 grid-template-columns: repeat(2, 1fr);
             }
         }
         @media (max-width: 550px) {
             .stop-manage-grid {
+                grid-template-columns: 1fr;
+            }
+            .stop-manage-grid .row-4-col {
+                grid-column: span 1;
                 grid-template-columns: 1fr;
             }
         }
@@ -147,7 +158,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 8px;
+            padding: 5px 6px;
             background: #fafbfc;
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -191,7 +202,6 @@
             flex-shrink: 0;
         }
 
-        /* 按鈕高度不變，文字 9px，寬度進一步縮短 */
         .role-btn {
             padding: 3px 3px;
             border-radius: 4px;
@@ -264,6 +274,21 @@
             display: flex;
             gap: 4px;
             align-items: center;
+        }
+
+        .clear-all-btn {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .clear-all-btn:hover {
+            background: #475569;
         }
 
         .table-view-btn {
@@ -464,6 +489,7 @@
             color: white;
         }
 
+        /* 路線卡片：無左側粗色線、無多餘陰影 */
         .bus-card {
             background: #ffffff;
             border-radius: var(--radius);
@@ -473,36 +499,50 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border-color);
-            border-left: 5px solid var(--kmb-red);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            box-shadow: none;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
 
+        /* 路線牌：單一紅色、無漸變、無邊框顏色、無陰影 */
         .route-no-wrapper {
             position: relative;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             margin-right: 12px;
+            min-width: 66px;
+            padding: 4px 8px;
+            background-color: var(--kmb-red);
+            border-radius: 6px;
+            border: none;
+            box-shadow: none;
+            box-sizing: border-box;
         }
 
         .route-no {
-            font-size: 20px;
-            font-weight: 400;
-            line-height: 1;
-            color: var(--text-main);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            text-shadow: none;
         }
 
         .route-corner-badge {
             position: absolute;
             top: -5px;
-            right: -8px;
-            background: #e2e8f0;
-            color: #475569;
+            right: -6px;
+            background: #1e293b;
+            color: #ffffff;
             font-size: 8px;
             font-weight: 700;
-            padding: 1px 3px;
-            border-radius: 3px;
+            padding: 1px 4px;
+            border-radius: 4px;
+            border: none;
+            box-shadow: none;
         }
 
         .route-header-line {
@@ -514,7 +554,7 @@
 
         .route-direction {
             font-size: 14px;
-            font-weight: 400;
+            font-weight: 600;
             color: var(--text-main);
         }
 
@@ -524,7 +564,6 @@
             align-items: center;
         }
 
-        /* 動態票價色階 */
         .fare-tag {
             font-size: 9px;
             font-weight: 600;
@@ -553,11 +592,13 @@
         .route-pair-info {
             font-size: 10px;
             color: var(--text-sub);
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
         .time-box {
             text-align: right;
+            flex-shrink: 0;
+            margin-left: 10px;
         }
 
         .time-mins-container {
@@ -638,16 +679,15 @@
         <div class="card" style="padding: 8px 12px;">
             <div style="font-size: 11px; color: var(--text-main); margin-bottom: 4px; font-weight: 700; display:flex; justify-content:flex-end; align-items:center;">
                 <div class="action-btns-group">
+                    <button class="clear-all-btn" onclick="clearAllSelections()">🧹 清除選擇</button>
                     <button class="table-view-btn" onclick="openDefaultStopsModal()">📋 預設站名表</button>
                     <button class="fare-table-btn" onclick="openFareModal()">📊 票價表</button>
                     <span style="font-size:10px; color:#007aff; cursor:pointer;" onclick="loadBusData()">🔄 重新整理</span>
                 </div>
             </div>
             
-            <!-- 3 Columns 緊湊網格站點清單 -->
             <div class="stop-manage-grid" id="stopManagerList"></div>
 
-            <!-- 自定義新增站點 -->
             <div class="add-row">
                 <input type="text" id="newStopInput" class="add-input" placeholder="輸入 16 碼 UUID 新增站點..." oninput="checkInputState()">
                 <button id="addStopBtn" class="add-btn" onclick="addCustomStop()" disabled>+ 新增站點</button>
@@ -727,7 +767,7 @@
     </div>
 
     <div class="app-version">
-        KMB Cute & Clean UI | v2.83
+        KMB Clean & Flat UI | v2.86
     </div>
 
     <script>
@@ -747,7 +787,6 @@
             "9E54416DFC0C7B68": "啟業邨 (KT682)"
         };
 
-        // 預設站點清單
         let globalStops = [
             { id: "F60097D67F33DC0C", isOrigin: true, isDest: false, isHome: true, isCustom: false },
             { id: "23AF5995FEBCA8E6", isOrigin: true, isDest: false, isHome: true, isCustom: false },
@@ -755,14 +794,12 @@
             { id: "3E73B73B12E25DCF", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "4D3C6D74F6AE8C7D", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "DF942A6B97EABDC4", isOrigin: false, isDest: true, isHome: false, isCustom: false },
-            // 第三行 4 個按鈕並排
             { id: "DB42B6238F75CF3C", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "31B93EAF018D6956", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "9C884013EBA1D548", isOrigin: false, isDest: true, isHome: false, isCustom: false },
             { id: "9E54416DFC0C7B68", isOrigin: false, isDest: true, isHome: false, isCustom: false }
         ];
 
-        // 票價表資料庫：依照 Route 排序，同 Route 則 Outbound 在前、Inbound 在後
         const fareDatabase = [
             { route: "1A", dir: "Inbound (I)", fare: "$7.9" },
             { route: "3D", dir: "Outbound (O)", fare: "$5.8" },
@@ -775,6 +812,15 @@
             { route: "101", dir: "Inbound (I)", fare: "$7.7" },
             { route: "671", dir: "Outbound (O)", fare: "$14.7" }
         ];
+
+        function clearAllSelections() {
+            globalStops.forEach(stop => {
+                stop.isOrigin = false;
+                stop.isDest = false;
+            });
+            renderStopManager();
+            loadBusData();
+        }
 
         function openFareModal() {
             const tbody = document.getElementById('fareTableBody');
@@ -853,10 +899,8 @@
             const container = document.getElementById('stopManagerList');
             let html = '';
 
-            for (let i = 0; i < globalStops.length; i++) {
-                const stop = globalStops[i];
+            const renderCardHtml = async (stop, i) => {
                 let fullName = await getStopDisplayName(stop.id);
-                
                 let cleanName = fullName;
                 let codePart = "";
                 const match = fullName.match(/(.*?)\s*\((.*?)\)$/);
@@ -868,13 +912,9 @@
                 }
 
                 const homeIcon = stop.isHome ? `<span title="常用住家站" style="margin-left:2px; font-size:11px; flex-shrink:0;">🏠</span>` : '';
-                
-                let customCodeDisplay = "";
-                if (stop.isCustom) {
-                    customCodeDisplay = ` (${stop.id.substring(0,4)})`;
-                }
+                let customCodeDisplay = stop.isCustom ? ` (${stop.id.substring(0,4)})` : "";
 
-                html += `
+                return `
                     <div class="stop-manage-row">
                         <div class="stop-info-area">
                             <div class="stop-name-line">
@@ -890,7 +930,26 @@
                         </div>
                     </div>
                 `;
+            };
+
+            for (let i = 0; i < 6; i++) {
+                if (globalStops[i]) {
+                    html += await renderCardHtml(globalStops[i], i);
+                }
             }
+
+            if (globalStops.length >= 10) {
+                html += `<div class="row-4-col">`;
+                for (let i = 6; i < 10; i++) {
+                    html += await renderCardHtml(globalStops[i], i);
+                }
+                html += `</div>`;
+            }
+
+            for (let i = 10; i < globalStops.length; i++) {
+                html += await renderCardHtml(globalStops[i], i);
+            }
+
             container.innerHTML = html;
         }
 
@@ -982,7 +1041,7 @@
             if (r === "1A" && (d === "I" || d === "INBOUND")) return "$7.9";
             if (r === "17" && (d === "I" || d === "INBOUND")) return "$6.7";
             if (r === "101" && (d === "I" || d === "INBOUND")) return "$7.7";
-            if (r === "11B") return "$5.8"; // 涵蓋 11B 所有方向
+            if (r === "11B") return "$5.8";
             if (r === "11C" && (d === "O" || d === "OUTBOUND")) return "$6.7";
             if (r === "89C" && (d === "O" || d === "OUTBOUND")) return "$7.4";
             if (r === "89X" && (d === "O" || d === "OUTBOUND")) return "$7.4";
@@ -1145,7 +1204,6 @@
             `;
         }
 
-        // Tab 1: 實時預報
         async function loadBusData() {
             const container = document.getElementById('busListContainer');
             
@@ -1164,7 +1222,10 @@
                 await Promise.all(activeOrigins.map(async (orig) => {
                     const etaUrl = `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${orig.id}`;
                     const etaResult = await fetchWithFallback(etaUrl);
-                    const origName = await getStopDisplayName(orig.id);
+                    let origName = await getStopDisplayName(orig.id);
+                    if (orig.id === "F60097D67F33DC0C" || orig.id === "23AF5995FEBCA8E6") {
+                        origName = `🏠 ${origName}`;
+                    }
                     if (etaResult.data && etaResult.data.data) {
                         etaResult.data.data.forEach(bus => {
                             if (bus.eta) {
@@ -1222,13 +1283,12 @@
                                 ...bus, 
                                 dir: b, 
                                 matchedOriginName: bus.queriedOriginName, 
-                                matchedDestName: matchedDestName || "指定終點" 
+                                matchedDestName: matchedDestName || "沒有指定終點" 
                             });
                         }
                     }
                 }
 
-                // 排序：確保所有「即將」到站的車次嚴格置頂在最前，之後依時間排序
                 processedEtas.sort((a, b) => {
                     const now = new Date();
                     const diffA = new Date(a.eta) - now;
@@ -1246,7 +1306,6 @@
                     return;
                 }
 
-                // F12 主控台輸出要求：僅包含 route, etaTimeStr, crowdclass
                 const consoleOutputData = processedEtas.map(bus => {
                     let crowdClass = "normal";
                     if (bus.psg_cap === '2') crowdClass = "crowded";
@@ -1298,7 +1357,6 @@
 
                     const pairText = `${bus.matchedOriginName} > ${bus.matchedDestName}`;
 
-                    // 「即將」設為 20px、深藍色、正常字重、絕對不帶分鐘字眼
                     let timeBoxHtml = '';
                     if (isSoon) {
                         timeBoxHtml = `
@@ -1321,12 +1379,12 @@
 
                     html += `
                         <div class="bus-card">
-                            <div style="display: flex; align-items: center;">
+                            <div style="display: flex; align-items: center; min-width: 0;">
                                 <div class="route-no-wrapper">
                                     <div class="route-no">${route}</div>
                                     ${cornerBadge}
                                 </div>
-                                <div>
+                                <div style="min-width: 0;">
                                     <div class="route-header-line">
                                         <span class="route-direction">往 ${dest}</span>
                                         <div class="meta-tags">
